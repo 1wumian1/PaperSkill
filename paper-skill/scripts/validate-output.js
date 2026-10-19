@@ -3,20 +3,18 @@
  * validate-output.js — automated structural validator for the paper-skill React + TS output.
  *
  * Runs as a hard gate after the project folder is generated (see scripts/validation-checklist.md).
- * All hard thresholds are loaded from contract.md so the validator cannot drift from the
- * skill's single source of truth.
- *
  * Checks:
  *   1. required framework files exist (index.html, package.json, src/main.tsx, App.tsx,
  *      types.ts, src/data/tutorial.ts, styles, src/modules/registry.tsx, configs).
- *   2. `kind: "chapter"` count within [chapterCountMin, chapterCountMax].
- *   3. `kind: "module"` count >= activeModulesMin; >= dualModuleChaptersMin chapters have two.
+ *   2. at least one chapter; report chapter and scene counts without a range gate.
+ *   3. the tutorial declares active modules; evidence-only chapters are allowed.
  *   4. no leftover template placeholders (__XXX__, __METAPHOR_CSS__, TBD, TODO) in
  *      src/data/tutorial.ts, src/styles/paper.css, or src/modules/*.
  *   5. every Bilibili bvid (if any) is a real `BV...` (empty bvid tolerated as "omit").
  *   6. every componentId referenced in tutorial.ts is registered in src/modules/registry.tsx
- *      (the seeded `example-slider` is always allowed).
- *   7. syntax parse of every project source file (src/** and vite config) with TypeScript or
+ *      Every referenced widget must be registered by the paper-specific packet.
+ *   7. shared PPT framework matches the copied template byte-for-byte.
+ *   8. syntax parse of every project source file (src/** and vite config) with TypeScript or
  *      esbuild; catches truncated or unbalanced files before the repository CI build.
  *
  * Usage: node scripts/validate-output.js <path-to>/<paper-short-name>_output
@@ -28,43 +26,6 @@
 const fs = require('fs');
 const path = require('path');
 const { checkProject } = require('./syntax-check.js');
-
-// --- CONFIG (read directly from contract.md §2, §3) ---
-// Contract lives beside this script in the repository (paper-skill/scripts -> paper-skill/) and
-// may be copied beside the helpers in a generated intermediate skill.
-const contractCandidates = [
-  path.join(__dirname, '..', 'contract.md'),
-  path.join(__dirname, 'contract.md'),
-  path.join(__dirname, '..', '..', 'contract.md'),
-];
-const contractPath = contractCandidates.find((candidate) => fs.existsSync(candidate));
-if (!contractPath) {
-  console.error('Cannot find contract.md next to validate-output.js.');
-  process.exit(2);
-}
-const contract = fs.readFileSync(contractPath, 'utf8');
-
-function readContractInteger(field) {
-  const escapedField = field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = contract.match(
-    new RegExp('\\|\\s*`' + escapedField + '`\\s*\\|\\s*(\\d+)\\s*\\|')
-  );
-  if (!match) {
-    throw new Error(`Missing numeric contract field: ${field}`);
-  }
-  const value = Number.parseInt(match[1], 10);
-  if (!Number.isInteger(value)) {
-    throw new Error(`Invalid numeric contract field: ${field}`);
-  }
-  return value;
-}
-
-const CONFIG = {
-  chapterCountMin: readContractInteger('chapterCountMin'),
-  chapterCountMax: readContractInteger('chapterCountMax'),
-  activeModulesMin: readContractInteger('activeModulesMin'),
-  dualModuleChaptersMin: readContractInteger('dualModuleChaptersMin'),
-};
 
 function fail(msg) {
   console.error('  ✗ ' + msg);
@@ -81,6 +42,35 @@ function readSafe(p) {
   } catch (e) {
     return null;
   }
+}
+
+function findTemplateDir() {
+  return [
+    path.join(__dirname, 'assets', 'react-template'),
+    path.join(__dirname, '..', 'assets', 'react-template'),
+  ].find(candidate => fs.existsSync(path.join(candidate, 'src', 'App.tsx')));
+}
+
+function listFiles(dir, prefix = '') {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const relative = path.join(prefix, entry.name);
+    if (entry.isDirectory()) return listFiles(path.join(dir, entry.name), relative);
+    return entry.isFile() ? [relative] : [];
+  });
+}
+
+function frameworkPaths(templateDir) {
+  const fixed = [
+    'vite.config.ts', 'tsconfig.json', 'src/vite-env.d.ts', 'src/main.tsx',
+    'src/App.tsx', 'src/types.ts', 'src/styles/tokens.css',
+    'src/styles/components.css', 'src/styles/presentation.css',
+  ];
+  return [
+    ...fixed,
+    ...listFiles(path.join(templateDir, 'src', 'components')).map(file => path.join('src', 'components', file)),
+    ...listFiles(path.join(templateDir, 'src', 'lib')).map(file => path.join('src', 'lib', file)),
+  ];
 }
 
 // Best-effort helpers below keep string/template content visible so URLs and copy survive when
@@ -137,6 +127,7 @@ function main() {
     'src/data/tutorial.ts',
     'src/styles/tokens.css',
     'src/styles/components.css',
+    'src/styles/presentation.css',
     'src/styles/paper.css',
     'src/modules/registry.tsx',
   ];
@@ -158,43 +149,29 @@ function main() {
     // or `__XXX__` is not mistaken for data. paper.css is scanned RAW because its
     // `__METAPHOR_CSS__` placeholder intentionally lives inside a comment marker.
     const tut = stripComments(tutRaw);
-    // --- 2 & 3. chapter / module / dual-module counts ---
+    if (/[,{]\s*['"]?focus['"]?\s*:/.test(tut)) {
+      allPass = fail('legacy focus scene bodies are unsupported; give each scene a paper-specific componentId');
+    }
+    // --- 2 & 3. nonempty chapters and active modules across the tutorial ---
     // Quote-tolerant: tutorial.ts may be hand-written (`kind: "chapter"`) or
     // assembled from JSON packets via JSON.stringify (`"kind": "chapter"`).
     const chapterCount = (tut.match(/["']?kind["']?\s*:\s*["']chapter["']/g) || []).length;
     const moduleCount = (tut.match(/["']?kind["']?\s*:\s*["']module["']/g) || []).length;
 
-    const chapterBlocks = tut.split(/["']?kind["']?\s*:\s*["']chapter["']/);
-    let dual = 0;
-    for (let i = 1; i < chapterBlocks.length; i++) {
-      const m = (chapterBlocks[i].match(/["']?kind["']?\s*:\s*["']module["']/g) || []).length;
-      if (m >= 2) dual += 1;
+    if (chapterCount === 0) {
+      allPass = fail('tutorial has no chapters');
+    } else {
+      ok(`chapter count = ${chapterCount} (no numeric limit)`);
     }
 
-    if (chapterCount < CONFIG.chapterCountMin || chapterCount > CONFIG.chapterCountMax) {
-      allPass = fail(
-        `chapter count = ${chapterCount}, must be within [${CONFIG.chapterCountMin}, ${CONFIG.chapterCountMax}]`
-      );
+    if (moduleCount === 0) {
+      allPass = fail('tutorial has no active modules');
     } else {
-      ok(`chapter count = ${chapterCount} (within [${CONFIG.chapterCountMin}, ${CONFIG.chapterCountMax}])`);
-    }
-
-    if (dual < CONFIG.dualModuleChaptersMin) {
-      allPass = fail(
-        `chapters with two modules = ${dual}, need >= ${CONFIG.dualModuleChaptersMin}`
-      );
-    } else {
-      ok(`chapters with two modules = ${dual} (>= ${CONFIG.dualModuleChaptersMin})`);
-    }
-
-    if (moduleCount < CONFIG.activeModulesMin) {
-      allPass = fail(`total active modules = ${moduleCount}, need >= ${CONFIG.activeModulesMin}`);
-    } else {
-      ok(`total active modules = ${moduleCount} (>= ${CONFIG.activeModulesMin})`);
+      ok(`${moduleCount} declared active modules; method coverage requires visual review`);
     }
 
     // --- 4. leftover placeholders ---
-    const phRe = /__[A-Za-z0-9_]+__|__METAPHOR_CSS__|\bTBD\b|\bTODO\b/;
+    const phRe = /__[A-Za-z0-9_]+__|__METAPHOR_CSS__|PAPER_SKILL_DEMO_CONTENT|\bTBD\b|\bTODO\b/;
     const paperCss = readSafe(path.join(dir, 'src/styles/paper.css')) || '';
     let moduleConcat = '';
     const modulesDir = path.join(dir, 'src/modules');
@@ -216,6 +193,13 @@ function main() {
       } else {
         ok(`no leftover placeholders in ${label}`);
       }
+    }
+    const genericSlideHeading = /论文机制\s*[\/／]\s*证据|论文原理\s*[\/／]\s*证据|论文出处|来源\s*[\/／]\s*证据|实验\s*[·•]\s*机制示意/;
+    const sceneTitles = [...tut.matchAll(/"title"\s*:\s*"([^"]*)"/g)].map(match => match[1]).join('\n');
+    if (genericSlideHeading.test(sceneTitles + '\n' + moduleConcat)) {
+      allPass = fail('generic paper-evidence heading found in tutorial content; use a specific scientific heading or no subheading');
+    } else {
+      ok('no generic paper-evidence headings in tutorial content');
     }
 
     // --- 5. Bilibili bvid check ---
@@ -246,7 +230,6 @@ function main() {
     const uniqueIds = [...new Set(compIds)];
     const unregistered = [];
     for (const id of uniqueIds) {
-      if (id === 'example-slider') continue; // seeded in the scaffold
       const re = new RegExp(
         "widgetRegistry\\[['\"]" + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "['\"]\\]"
       );
@@ -260,7 +243,49 @@ function main() {
 
   }
 
-  // --- 7. syntax parse of every project source file ---
+  // Scene-format outputs carry a derived outline.
+  if (fs.existsSync(path.join(dir, 'src/styles/presentation.css'))) {
+    try {
+      const outline = JSON.parse(fs.readFileSync(path.join(dir, 'outlines.json'), 'utf8'));
+      if (!Array.isArray(outline.pages) || !outline.pages.length) throw new Error('outline has no pages');
+      const ids = new Set(['cover', 'videos']);
+      for (const page of outline.pages) {
+        for (const field of ['id', 'chapterId', 'title', 'goal', 'summary', 'interaction', 'snippet']) {
+          if (typeof page[field] !== 'string' || !page[field].trim()) throw new Error(`page missing ${field}`);
+        }
+        if (typeof page.next !== 'string') throw new Error(`${page.id}: missing next`);
+        if (ids.has(page.id)) throw new Error(`duplicate page id ${page.id}`);
+        ids.add(page.id);
+      }
+      ok(`scene outline contains ${outline.pages.length} unique teaching pages`);
+    } catch (error) { allPass = fail(`scene outline: ${error.message}`); }
+  }
+
+  // The paper-specific widgets and data vary, but the PPT player and shared styles must
+  // remain byte-for-byte identical to the bundled template used by the scaffolder.
+  const templateDir = findTemplateDir();
+  if (!templateDir) {
+    allPass = fail('bundled assets/react-template is missing beside the validator');
+  } else {
+    const expected = frameworkPaths(templateDir);
+    const expectedSet = new Set(expected.map(file => file.replace(/\\/g, '/')));
+    for (const relative of expected) {
+      const source = path.join(templateDir, relative);
+      const target = path.join(dir, relative);
+      if (!fs.existsSync(target) || !fs.readFileSync(source).equals(fs.readFileSync(target))) {
+        allPass = fail(`framework differs from the PPT template: ${relative.replace(/\\/g, '/')}`);
+      }
+    }
+    for (const part of ['components', 'lib']) {
+      for (const file of listFiles(path.join(dir, 'src', part))) {
+        const relative = path.join('src', part, file).replace(/\\/g, '/');
+        if (!expectedSet.has(relative)) allPass = fail(`unexpected framework file: ${relative}`);
+      }
+    }
+    if (allPass) ok(`PPT framework matches bundled template (${expected.length} files)`);
+  }
+
+  // --- 8. syntax parse of every project source file ---
   // The repository CI compiles each change with `tsc`/`vite`; this gate moves the same check into
   // the generation stage so a truncated widget is caught before a Pull Request. When dependencies
   // are not installed (the repository CI runs this before `npm ci`) the parser is unavailable and
