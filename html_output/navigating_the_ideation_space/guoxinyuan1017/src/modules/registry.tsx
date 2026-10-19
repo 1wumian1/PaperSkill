@@ -1,5 +1,6 @@
 import React from 'react';
 import { ExampleSlider } from './exampleSlider';
+import { HeroSingleVector, HeroDecompose } from './heroWidgets';
 import { S0Overview } from './s0-overview';
 import { S1Decompose } from './s1-decompose';
 import { S2Transition } from './s2-transition';
@@ -21,6 +22,10 @@ export const widgetRegistry: Record<string, React.FC<WidgetProps>> = {};
 
 // Framework example kept so a fresh scaffold runs out-of-the-box.
 widgetRegistry['example-slider'] = ExampleSlider;
+
+// Cover widgets rendered inside the Hero contrast cards.
+widgetRegistry['hero-single-vector'] = HeroSingleVector;
+widgetRegistry['hero-decompose'] = HeroDecompose;
 
 // Paper-specific screens (2601.08901). Each is one self-contained interactive card.
 widgetRegistry['s0-overview'] = S0Overview;

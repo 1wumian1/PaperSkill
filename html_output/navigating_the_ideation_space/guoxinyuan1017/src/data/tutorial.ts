@@ -25,9 +25,11 @@ export const tutorial: TutorialData = {
 
   hero: {
     oldMethod: {
+      componentId: 'hero-single-vector',
       desc: '把整篇论文压成<b>一个向量</b>。标题像、摘要像，就算两篇论文像 —— 至于像在问题还是像在方法，无从分辨。',
     },
     newMethod: {
+      componentId: 'hero-decompose',
       desc: '先拆成<b>三个子空间</b>，再在库与库之间做减法（T_PM、T_MF）。相似度不再是一个标量，而是一组带方向的读数。',
     },
   },

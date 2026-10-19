@@ -1311,3 +1311,21 @@ a.dl-video-card:hover .dl-video-link-cover {
   .slide-nav-btn { padding: 8px 14px; }
   .slide-nav-counter { min-width: 48px; }
 }
+
+/* ---- Hero cover widgets (heroWidgets.tsx) ---- */
+.hw-svg { display: block; width: 100%; height: auto; }
+.hw-breathe { animation: hw-breathe 3.2s ease-in-out infinite; }
+@keyframes hw-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.hw-fork { animation: hw-fork 4.5s ease-in-out infinite; }
+.hw-f2 { animation-delay: 0.6s; }
+.hw-f3 { animation-delay: 1.2s; }
+@keyframes hw-fork {
+  0%, 14%, 100% { opacity: 0.45; }
+  7% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hw-breathe, .hw-fork { animation: none; }
+}
