@@ -38,15 +38,15 @@ or slide count.
 - [ ] Formula symbols, assumptions, shapes and signs match the paper. Result comparisons use compatible protocols, units, baselines and metric directions.
 - [ ] Numerical experiment tables are visualized with suitable statistical charts unless a table better serves the stated learning objective. Check plotted values against the selected source rows, metric direction, units, zero-based bars, comparable scales, readable labels and uncertainty handling per presentation-standard.md. Result graphics do not substitute for core-method interactions.
 - [ ] Visible formula terms have contextual Chinese meanings on hover/focus and mobile tap, including custom bodies. Hints remain inside the viewport without shifting slide content; Escape and outside click dismiss them. Symbol hints do not count as core method interactions.
-- [ ] The framework files under `src/components`, `src/lib` and shared styles match the staged template; paper content stays in `src/data/tutorial.ts`, `src/modules/*`, `src/styles/paper.css` and staged media.
+- [ ] Use the staged framework as the default starting point. Keep paper content primarily in `src/data/tutorial.ts`, `src/modules/*`, `src/styles/paper.css` and staged media.
 - [ ] Interaction works by mouse, keyboard where feasible, and touch. Two-pointer pinch and bounded pan still work in mobile emulation without reflowing the slide.
 - [ ] No slide or card scrolls. The 1600×900 canvas fits with readable text in desktop, mobile, notes and fullscreen states; longest feedback and expanded details do not overlap or clip.
 - [ ] Capture and inspect the cover, every teaching page and optional video page. Run `auditSlide()` after fonts/images settle and after exercising meaningful interaction states; require no errors. If browser review is unavailable, report slide-fit validation as incomplete.
 
-## Automated Gates and Delivery
+## Automated Checks and Delivery
 
 - [ ] After `npm install`, run `node syntax-check.js <outputDir> --require-parser` and `node validate-output.js <outputDir>` on the final folder. Both pass; any edit afterward triggers both again.
 - [ ] The validator reports chapter and scene counts for inspection but applies no numeric page-count or chapter-count range.
-- [ ] `npm run build` passes in the generated project. No placeholder, demo content, missing widget, invalid BVID or altered framework file remains.
+- [ ] `npm run build` passes in the generated project. Review content warnings and correct visible placeholders, demo content or invalid video links as appropriate.
 - [ ] The exact task-scoped temporary root is removed after success or failure, unless `PAPER_SKILL_DEBUG=true`. Confirm the resolved target is the task root before recursive removal; never delete a broad temp parent.
 - [ ] Deliver the final project folder only. In debug mode, also return the preserved task root path.

@@ -282,23 +282,19 @@ Video recommendations are an **optional enrichment**, not a blocking requirement
 
 ## §8 Validation
 
-Run `scripts/syntax-check.js` and `scripts/validate-output.js` on the generated project folder as hard
-gates (in addition to the agent self-checklist in `scripts/validation-checklist.md`).
-`assemble-chapter-packets.js` already runs the same syntax gate on every assembled source, so a
-truncated widget fails during generation instead of in the repository CI. The scripts check:
+Run `scripts/syntax-check.js` and `scripts/validate-output.js` on the generated project folder,
+in addition to the review in `scripts/validation-checklist.md` and an actual `npm run build`.
+`assemble-chapter-packets.js` also checks syntax during assembly.
 
-- No syntax error in any `src/**` file or the Vite config: `syntax-check.js <folder> --require-parser`
-  parses each file with the project's TypeScript/esbuild and fails on missing brackets, truncation,
-  or unterminated constructs (`--require-parser` also fails when the parser is not installed).
-- The tutorial has at least one chapter and explicit teaching scenes. Chapter and slide
-  counts are reported for review, never compared with a numeric range (§2).
-- The tutorial has registered active modules, and every declared module is mounted on a teaching scene (§3). Scientific coverage is reviewed by the agent, not inferred from module counts.
-- No leftover template placeholders (`__…__`, `__METAPHOR_CSS__`, `TBD`, `TODO`) in
-  `src/data/tutorial.ts`, `src/styles/paper.css`, or `src/modules/*`.
-- Optional: Bilibili entries either have a real `bvid` (`BV…`) or are omitted.
-- The shared PPT player, components, configuration and styles match the bundled
-  `assets/react-template/` byte-for-byte; only paper-specific data, scene widgets,
-  `src/styles/paper.css`, and staged media vary.
+Check essential project files, at least one chapter, component ID registration and source syntax. `syntax-check.js <folder> --require-parser` requires the project's
+TypeScript/esbuild parser; install dependencies before the final check.
+
+Report chapter and slide counts for review. Review module coverage, possible placeholders,
+optional video links, headings, scene fields and available outlines. Check scientific coverage,
+visible copy and source accuracy, and correct issues where appropriate.
+
+Use the bundled template as the default starting point. Confirm compatibility, interactions
+and slide fit through an actual build and browser operation.
 
 ---
 

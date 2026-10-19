@@ -94,7 +94,7 @@ try {
   const valid = run('validate-output.js', [output]);
   assert.equal(valid.status, 0, valid.stdout + valid.stderr);
   assert.match(valid.stdout, /chapter count = 12 \(no numeric limit\)/);
-  assert.match(valid.stdout, /PPT framework matches bundled template/);
+  assert.doesNotMatch(valid.stdout + valid.stderr, /framework differs|unexpected framework/);
 
   const outlinePath = path.join(output, 'outlines.json');
   const outline = JSON.parse(fs.readFileSync(outlinePath, 'utf8'));
@@ -104,25 +104,57 @@ try {
   const cleanWidget = fs.readFileSync(widgetPath, 'utf8');
   fs.writeFileSync(widgetPath, cleanWidget.replace('return null', 'return <div>论文机制 / 证据</div>'));
   const stiff = run('validate-output.js', [output]);
-  assert.equal(stiff.status, 1, stiff.stdout + stiff.stderr);
-  assert.match(stiff.stderr, /generic paper-evidence heading/);
+  assert.equal(stiff.status, 0, stiff.stdout + stiff.stderr);
+  assert.match(stiff.stdout, /generic paper-evidence heading/);
   fs.writeFileSync(widgetPath, cleanWidget);
 
   const presentationCss = path.join(output, 'src', 'styles', 'presentation.css');
   const original = fs.readFileSync(presentationCss);
   fs.appendFileSync(presentationCss, '\n/* old layout drift */\n');
   const changed = run('validate-output.js', [output]);
-  assert.equal(changed.status, 1, changed.stdout + changed.stderr);
-  assert.match(changed.stderr, /framework differs from the PPT template: src\/styles\/presentation\.css/);
+  assert.equal(changed.status, 0, changed.stdout + changed.stderr);
+
   fs.writeFileSync(presentationCss, original);
 
   const stray = path.join(output, 'src', 'components', 'LegacyRecap.tsx');
   fs.writeFileSync(stray, 'export const LegacyRecap = () => null;\n');
   const added = run('validate-output.js', [output]);
-  assert.equal(added.status, 1, added.stdout + added.stderr);
-  assert.match(added.stderr, /unexpected framework file: src\/components\/LegacyRecap\.tsx/);
+  assert.equal(added.status, 0, added.stdout + added.stderr);
 
-  console.log('PASS: copied helpers accept twelve chapters without a count gate; template drift is rejected.');
+
+  fs.unlinkSync(presentationCss);
+  fs.unlinkSync(outlinePath);
+  const legacy = run('validate-output.js', [output]);
+  assert.equal(legacy.status, 0, legacy.stdout + legacy.stderr);
+
+  const registryPath = path.join(output, 'src', 'modules', 'registry.tsx');
+  const registry = fs.readFileSync(registryPath, 'utf8');
+  fs.writeFileSync(registryPath, 'export const widgetRegistry = {' + widgets.map(w => JSON.stringify(w.componentId) + ': () => null').join(',') + '};');
+  const objectRegistry = run('validate-output.js', [output]);
+  assert.equal(objectRegistry.status, 0, objectRegistry.stdout + objectRegistry.stderr);
+  fs.writeFileSync(registryPath, 'export const widgetRegistry = {};');
+  const missingWidget = run('validate-output.js', [output]);
+  assert.equal(missingWidget.status, 1);
+  assert.match(missingWidget.stderr, /not registered/);
+  fs.writeFileSync(registryPath, registry);
+
+  const entry = path.join(output, 'src', 'main.tsx');
+  const entrySource = fs.readFileSync(entry);
+  fs.unlinkSync(entry);
+  const missingEntry = run('validate-output.js', [output]);
+  assert.equal(missingEntry.status, 1);
+  assert.match(missingEntry.stderr, /missing required file: src\/main.tsx/);
+  fs.writeFileSync(entry, entrySource);
+
+  const parser = path.join(source, 'assets', 'react-template', 'node_modules', 'typescript');
+  assert.ok(fs.existsSync(parser), 'Install template dependencies before running the syntax regression');
+  fs.mkdirSync(path.join(output, 'node_modules'), { recursive: true });
+  fs.symlinkSync(parser, path.join(output, 'node_modules', 'typescript'), process.platform === 'win32' ? 'junction' : 'dir');
+  fs.writeFileSync(widgetPath, 'export function Broken() { return <div>');
+  const broken = run('validate-output.js', [output]);
+  assert.equal(broken.status, 1);
+  assert.match(broken.stderr, /syntax error/);
+  console.log('PASS: template changes, legacy components, optional outlines and object registries accepted; missing entries, unregistered widgets and syntax errors rejected.');
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
 }

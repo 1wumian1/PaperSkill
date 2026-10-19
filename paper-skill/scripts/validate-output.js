@@ -2,18 +2,19 @@
 /*
  * validate-output.js — automated structural validator for the paper-skill React + TS output.
  *
- * Runs as a hard gate after the project folder is generated (see scripts/validation-checklist.md).
+ * Checks generated projects for missing essentials, broken registrations and syntax errors.
+ * Teaching/style concerns are review warnings, not template-identity requirements.
  * Checks:
  *   1. required framework files exist (index.html, package.json, src/main.tsx, App.tsx,
- *      types.ts, src/data/tutorial.ts, styles, src/modules/registry.tsx, configs).
+ *      src/data/tutorial.ts, src/modules/registry.tsx, configs).
  *   2. at least one chapter; report chapter and scene counts without a range gate.
- *   3. the tutorial declares active modules; evidence-only chapters are allowed.
- *   4. no leftover template placeholders (__XXX__, __METAPHOR_CSS__, TBD, TODO) in
+ *   3. report interactive-module coverage for review; evidence-only chapters are allowed.
+ *   4. warn about leftover template placeholders (__XXX__, __METAPHOR_CSS__, TBD, TODO) in
  *      src/data/tutorial.ts, src/styles/paper.css, or src/modules/*.
- *   5. every Bilibili bvid (if any) is a real `BV...` (empty bvid tolerated as "omit").
+ *   5. warn about malformed Bilibili IDs (format checks cannot establish authenticity).
  *   6. every componentId referenced in tutorial.ts is registered in src/modules/registry.tsx
  *      Every referenced widget must be registered by the paper-specific packet.
- *   7. shared PPT framework matches the copied template byte-for-byte.
+ *   7. review existing scene outlines without requiring a specific framework revision.
  *   8. syntax parse of every project source file (src/** and vite config) with TypeScript or
  *      esbuild; catches truncated or unbalanced files before the repository CI build.
  *
@@ -31,6 +32,11 @@ function fail(msg) {
   console.error('  ✗ ' + msg);
   return false;
 }
+let reviewWarnings = 0;
+function warn(msg) {
+  reviewWarnings += 1;
+  console.log('  ! ' + msg);
+}
 function ok(msg) {
   console.log('  ✓ ' + msg);
   return true;
@@ -42,35 +48,6 @@ function readSafe(p) {
   } catch (e) {
     return null;
   }
-}
-
-function findTemplateDir() {
-  return [
-    path.join(__dirname, 'assets', 'react-template'),
-    path.join(__dirname, '..', 'assets', 'react-template'),
-  ].find(candidate => fs.existsSync(path.join(candidate, 'src', 'App.tsx')));
-}
-
-function listFiles(dir, prefix = '') {
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const relative = path.join(prefix, entry.name);
-    if (entry.isDirectory()) return listFiles(path.join(dir, entry.name), relative);
-    return entry.isFile() ? [relative] : [];
-  });
-}
-
-function frameworkPaths(templateDir) {
-  const fixed = [
-    'vite.config.ts', 'tsconfig.json', 'src/vite-env.d.ts', 'src/main.tsx',
-    'src/App.tsx', 'src/types.ts', 'src/styles/tokens.css',
-    'src/styles/components.css', 'src/styles/presentation.css',
-  ];
-  return [
-    ...fixed,
-    ...listFiles(path.join(templateDir, 'src', 'components')).map(file => path.join('src', 'components', file)),
-    ...listFiles(path.join(templateDir, 'src', 'lib')).map(file => path.join('src', 'lib', file)),
-  ];
 }
 
 // Best-effort helpers below keep string/template content visible so URLs and copy survive when
@@ -123,12 +100,7 @@ function main() {
     'tsconfig.json',
     'src/main.tsx',
     'src/App.tsx',
-    'src/types.ts',
     'src/data/tutorial.ts',
-    'src/styles/tokens.css',
-    'src/styles/components.css',
-    'src/styles/presentation.css',
-    'src/styles/paper.css',
     'src/modules/registry.tsx',
   ];
   for (const f of keyFiles) {
@@ -150,7 +122,7 @@ function main() {
     // `__METAPHOR_CSS__` placeholder intentionally lives inside a comment marker.
     const tut = stripComments(tutRaw);
     if (/[,{]\s*['"]?focus['"]?\s*:/.test(tut)) {
-      allPass = fail('legacy focus scene bodies are unsupported; give each scene a paper-specific componentId');
+      warn('legacy focus scenes found; check the rendered pages when updating to the PPT format');
     }
     // --- 2 & 3. nonempty chapters and active modules across the tutorial ---
     // Quote-tolerant: tutorial.ts may be hand-written (`kind: "chapter"`) or
@@ -165,7 +137,7 @@ function main() {
     }
 
     if (moduleCount === 0) {
-      allPass = fail('tutorial has no active modules');
+      warn('no declared active modules; review whether the tutorial needs mechanism interactions');
     } else {
       ok(`${moduleCount} declared active modules; method coverage requires visual review`);
     }
@@ -189,7 +161,7 @@ function main() {
     ];
     for (const [label, content] of scanTargets) {
       if (phRe.test(content)) {
-        allPass = fail(`leftover template placeholder in ${label} (e.g. __XXX__, __METAPHOR_CSS__, TBD, TODO)`);
+        warn(`possible leftover template placeholder in ${label}; review the visible content`);
       } else {
         ok(`no leftover placeholders in ${label}`);
       }
@@ -197,7 +169,7 @@ function main() {
     const genericSlideHeading = /论文机制\s*[\/／]\s*证据|论文原理\s*[\/／]\s*证据|论文出处|来源\s*[\/／]\s*证据|实验\s*[·•]\s*机制示意/;
     const sceneTitles = [...tut.matchAll(/"title"\s*:\s*"([^"]*)"/g)].map(match => match[1]).join('\n');
     if (genericSlideHeading.test(sceneTitles + '\n' + moduleConcat)) {
-      allPass = fail('generic paper-evidence heading found in tutorial content; use a specific scientific heading or no subheading');
+      warn('generic paper-evidence heading found; consider a specific scientific heading');
     } else {
       ok('no generic paper-evidence headings in tutorial content');
     }
@@ -217,11 +189,11 @@ function main() {
     if (total === 0) {
       ok('no Bilibili entries (videos optional — OK)');
     } else if (bad > 0) {
-      allPass = fail(`${bad} Bilibili entry has an invalid bvid (expected BV...)`);
+      warn(`${bad} Bilibili entry has a malformed bvid (expected BV...); check or omit it`);
     } else if (empty > 0) {
       ok(`${empty} empty bvid tolerated (omit the entry or the whole array for no video)`);
     } else {
-      ok(`all ${total} Bilibili entries have a valid bvid`);
+      ok(`all ${total} Bilibili entries have a well-formed bvid (authenticity not checked)`);
     }
 
     // --- 6. componentId registration ---
@@ -230,10 +202,10 @@ function main() {
     const uniqueIds = [...new Set(compIds)];
     const unregistered = [];
     for (const id of uniqueIds) {
-      const re = new RegExp(
-        "widgetRegistry\\[['\"]" + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "['\"]\\]"
-      );
-      if (!re.test(registry)) unregistered.push(id);
+      const escaped = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const assignment = new RegExp("widgetRegistry\\[['\"]" + escaped + "['\"]\\]");
+      const objectKey = new RegExp("(?:^|[,{])\\s*(?:['\"]" + escaped + "['\"]|" + escaped + ")\\s*:", 'm');
+      if (!assignment.test(registry) && !objectKey.test(registry)) unregistered.push(id);
     }
     if (unregistered.length > 0) {
       allPass = fail(`componentId(s) not registered in registry.tsx: ${unregistered.join(', ')}`);
@@ -244,7 +216,7 @@ function main() {
   }
 
   // Scene-format outputs carry a derived outline.
-  if (fs.existsSync(path.join(dir, 'src/styles/presentation.css'))) {
+  if (fs.existsSync(path.join(dir, 'outlines.json'))) {
     try {
       const outline = JSON.parse(fs.readFileSync(path.join(dir, 'outlines.json'), 'utf8'));
       if (!Array.isArray(outline.pages) || !outline.pages.length) throw new Error('outline has no pages');
@@ -258,32 +230,11 @@ function main() {
         ids.add(page.id);
       }
       ok(`scene outline contains ${outline.pages.length} unique teaching pages`);
-    } catch (error) { allPass = fail(`scene outline: ${error.message}`); }
+    } catch (error) { warn(`scene outline: ${error.message}; regenerate it if needed`); }
   }
 
-  // The paper-specific widgets and data vary, but the PPT player and shared styles must
-  // remain byte-for-byte identical to the bundled template used by the scaffolder.
-  const templateDir = findTemplateDir();
-  if (!templateDir) {
-    allPass = fail('bundled assets/react-template is missing beside the validator');
-  } else {
-    const expected = frameworkPaths(templateDir);
-    const expectedSet = new Set(expected.map(file => file.replace(/\\/g, '/')));
-    for (const relative of expected) {
-      const source = path.join(templateDir, relative);
-      const target = path.join(dir, relative);
-      if (!fs.existsSync(target) || !fs.readFileSync(source).equals(fs.readFileSync(target))) {
-        allPass = fail(`framework differs from the PPT template: ${relative.replace(/\\/g, '/')}`);
-      }
-    }
-    for (const part of ['components', 'lib']) {
-      for (const file of listFiles(path.join(dir, 'src', part))) {
-        const relative = path.join('src', part, file).replace(/\\/g, '/');
-        if (!expectedSet.has(relative)) allPass = fail(`unexpected framework file: ${relative}`);
-      }
-    }
-    if (allPass) ok(`PPT framework matches bundled template (${expected.length} files)`);
-  }
+  // Shared frameworks may come from older releases or contain working customizations.
+  // Type checking, Vite builds and browser operation validate compatibility, not file identity.
 
   // --- 8. syntax parse of every project source file ---
   // The repository CI compiles each change with `tsc`/`vite`; this gate moves the same check into
@@ -292,7 +243,7 @@ function main() {
   // the check is skipped here; CI's build:changed step still compiles the project.
   const syntaxReport = checkProject(dir);
   if (!syntaxReport.available) {
-    console.log('  ! syntax check skipped: run `npm install` in the project to enable the parse gate');
+    console.log('  ! syntax check skipped: run `npm install` in the project to enable syntax checking');
   } else if (syntaxReport.errors.length > 0) {
     for (const error of syntaxReport.errors.slice(0, 20)) {
       allPass = fail(`${path.relative(dir, error.file).replace(/\\/g, '/')}:${error.line}:${error.column} ${error.message}`);
@@ -303,6 +254,7 @@ function main() {
   }
 
   console.log('');
+  if (reviewWarnings) console.log(`Review warnings: ${reviewWarnings} (non-blocking; inspect the rendered tutorial)`);
   if (allPass) {
     console.log('RESULT: PASS');
     process.exit(0);

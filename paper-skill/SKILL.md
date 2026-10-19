@@ -187,7 +187,8 @@ After Phase 1 passes, review the generated temporary `SKILL.md`, staged `assets/
     on the final project folder, then run `npm run build` inside `<outputDir>`. Any edit after
     these gates requires re-running them.
     A truncated or unbalanced widget TSX must never survive to a Pull Request. The validator
-    also compares the PPT framework with the copied template and rejects old/edited layouts.
+    checks essential files, widget registration and syntax. Confirm the generated project
+    with a build and browser review.
 29. Validate rendered slide fit per `contract.md` §2.4, using the bundled browser-side `auditSlide()` plus screenshot review. Phase 2 checks the staged global contract and browser checklist alongside its slide plan.
 
 ## Resource Map
