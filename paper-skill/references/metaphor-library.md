@@ -1,6 +1,6 @@
 # Unified Everyday Theme Library
 
-Choose one familiar everyday activity as the anchor theme for the tutorial's opening and useful analogies. Its recurring people, objects and settings connect selected chapters; technical pages may instead carry continuity through palette and language. A chapter need not begin with an animation or depict the theme literally.
+Choose one familiar everyday activity as the anchor theme for the tutorial's opening and useful analogies. Its recurring people, objects and settings connect the whole deck. Every page includes a recognizable theme visual per contract.md §3; technical and static pages use a modest illustration or object tied to their current explanation. Choose each page's scale and action for its scientific question.
 
 ```text
 one tutorial = one paper-specific everyday theme
@@ -93,7 +93,7 @@ Use these prompts to invent candidates rather than as fixed mappings:
 - For guidance or conditioning, ask which activity uses a cue, reference, plan, rhythm, or constraint.
 - For stabilization, ask which activity uses balance, support, tuning, calibration, or review.
 - For architecture, use a life consequence only if it clarifies the structural choice; otherwise let learners manipulate the actual paper structure.
-- For results, prefer a readable verified comparison; a final life outcome is optional context.
+- For results, preserve a readable verified comparison and add a compact theme object or outcome that helps interpret its conditions or conclusion.
 
 ## Semantic Colors
 

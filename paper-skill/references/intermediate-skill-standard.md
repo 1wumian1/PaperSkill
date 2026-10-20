@@ -11,12 +11,14 @@ Use `templates/skill-template.md` as the section order: frontmatter and purpose;
 The theme section briefly compares candidates and records the paper-specific winner. The chapter plans include a scene-by-scene visual storyboard with selected physical episodes or paper-native experiments, `layoutRef` values or custom geometry, and widget IDs. Review the deck as a contact sheet before implementation.
 
 Add a compact deck-wide scene ledger before the detailed chapter plans. For each slide,
-record its teaching role, learner operation, whether that operation produces meaningful
-motion, the linked paper variable or result, and its source locator. Use it to choose
+record its teaching role, theme episode or static theme visual and its explanatory link, learner operation, meaningful motion,
+linked paper variable or result, and source locator. For a static page, state why it serves
+the question and where the related mechanism interaction resumes. Use it to choose
 the slide count around `contract.md` §2's planning target when appropriate and to find
 long stretches without animated interaction. This is a planning aid, not a runtime
-schema or validator quota. Redesign a sparse method segment around a distinct learner
-question instead of adding decorative animation or filler.
+schema or validator quota. Review the early, middle and late sequences separately against
+contract.md §3. Plan a late application or failure-and-repair interaction that revisits the
+core method through a new episode in the selected theme.
 
 ## Chapter planning without repeated slots
 
@@ -46,7 +48,7 @@ Every interactive module must specify all of these fields:
   terminology; reserve everyday metaphor wording for the explanation and interaction copy.
 - **Purpose:** one sentence describing what judgment the learner should form.
 - **Presentation mode:** life introduction, life-plus-paper-principle interaction, or paper-native
-  principle/evidence experiment. A technical page needs no repeated life prop.
+  principle/evidence experiment. A technical page retains a compact theme visual linked to its scientific explanation per contract.md §3.
 - **Exact operation:** direct manipulation, a few linked sliders or drag targets, an in-scene
   choice, or a result-start action; avoid detached transport and repeated tag switches.
 - **Initial state:** visible objects, selected mode, initial values, and initial feedback before input.
@@ -69,8 +71,9 @@ Avoid vague instructions such as "make it interactive", "show an animation", "di
 
 The cover, selected analogies and interactive body modules remain connected by one recognizable
 everyday story. The selected theme needs a scene-beat map for the pages where it clarifies
-the science; mark other pages as paper-native technical experiments. Recurring palette and
-language can preserve continuity without repeating characters or props. Do not fill the
+the science; mark other pages as paper-native technical experiments. Plan a recognizable,
+concept-relevant theme visual for every page, including compact static illustrations for
+technical or evidence pages per contract.md §3. Do not fill the
 deck with the same literal image or motion. The opening may be pure animation, but it ends
 by naming the paper's core method.
 After that, choose how to integrate readable scientific content:
@@ -93,7 +96,7 @@ Give each enough space to read on a projected slide; do not create two unrelated
 illustrations or many mini widgets. A separate principle/evidence slide may use a different
 balance when needed.
 
-Integrate paper-specific mathematical/technical mechanisms and evidence where the learning questions require them, so the tutorial does not hide the actual paper behind metaphor. Life/hybrid modules state their mapping to the selected theme and its boundary. Paper-native modules need no literal life scene; there is no fixed count or mandated area ratio.
+Integrate paper-specific mathematical/technical mechanisms and evidence where the learning questions require them, so the tutorial does not hide the actual paper behind metaphor. Life/hybrid modules state their mapping to the selected theme and its boundary. Paper-native modules retain a compact theme visual linked to their explanation; choose its size to preserve scientific readability per contract.md §3.
 
 ## Interaction Density
 

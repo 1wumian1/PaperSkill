@@ -174,22 +174,41 @@ clicks, and navigation do not count. A chapter may also contain a pure life-stor
 a scientific principle scene, or a verified result page without forcing those pages into a
 repeated module layout.
 
-Plan the **deck-wide mix** before building pages. In a typical 10–15-slide tutorial, roughly
-half of the body slides should be animated interactions: learner action changes a meaningful
-motion or time-evolving scene and a paper-relevant scientific consequence. Spread these across
-the method, not only the cover or first chapter. Other slides can use direct paper-native
-manipulation, readable derivation, original figures, controlled comparisons, or evidence.
-This is an editorial target, not a numeric pass/fail rule. If animation would obscure the
-paper's mechanism, use a technical interaction or evidence page instead; do not pad the deck.
+Plan the **deck-wide mix** before building pages. Aim for about three quarters of body pages
+(excluding the cover) to use theme-grounded, learner-driven animated interactions. The learner
+operates a recognizable object or action from the selected everyday theme, changing the
+paper-relevant state and visible motion together. Review these pages separately from purely
+paper-native interactions and static pages in the slide ledger. This is a planning target.
+Distribute them through the introduction, main method, result interpretation and
+applicability/limitations. Carry the selected everyday theme through the
+early, middle and late parts with distinct, paper-relevant physical episodes. Vary their
+scale: a full-body event, several linked small interactions, or a compact live scene beside
+substantial scientific explanation. Include a late application or failure-and-repair scene
+that lets the learner use the core method again.
+Each operation changes meaningful motion or a time-evolving scene, a linked paper-relevant
+state, and immediate feedback. Use animated paper-native manipulation where a physical
+analogy would obscure the mechanism.
+
+Individual derivations, original figures and numerical evidence pages may be static when
+that better serves their question. Every page retains a recognizable theme visual: on static
+or paper-native pages, add a modest, clearly legible theme illustration, object or vignette
+related to that page's concept, comparison condition or conclusion. Compose it beside the
+explanation or result so the science stays readable. Vary the object and its state with the
+question. Record the visual and its explanatory link in the page plan; static theme icons
+remain static pages when reviewing animated-interaction coverage. Give each static page a
+teaching reason and plan where the related mechanism interaction resumes. Preserve reported chart values; any adjacent animated
+teaching example uses its own clearly identified state. Review the ordered early, middle and
+late sequences separately for continuity, meaningful operations and varied theme episodes.
 An animated interaction does not mean a decorative entrance, looping background, moving
 photo, or autoplay scene with no learner control. Record the action, motion, scientific
 state change, feedback, and source/analogy limit together.
 
 Both cover methods mount live animations through registered componentIds and share the
 CoverPlayback clock. The cover may introduce an everyday story; later pages may use a
-related life episode, a hybrid scene, or a paper-native technical experiment. Theme cues
-provide continuity, but no body page is required to repeat the same object or include a
-life animation. Choose the view that exposes the current scientific question most clearly.
+related life episode, a hybrid scene, or a paper-native technical experiment. Every page
+shows a concept-relevant visual from the selected theme, with the size and amount of motion
+chosen for that page's scientific question. Use small static illustrations for quieter pages
+and varied operable episodes for the animated pages.
 Put formal material where it answers that question, not in a generic evidence panel.
 In active modules, learner input must change a paper-relevant variable, component,
 constraint or measured comparison and a visible scientific consequence. Changing only a
@@ -349,9 +368,8 @@ The tutorial **may** embed the paper's original figures. This is optional, never
 - An original-method figure may lead a dedicated explanation slide, appear after a life-based introduction, or support a nearby mechanism interaction. Preserve its scientific relationships and aspect ratio. Use local magnification or clearly marked crops/overlays when necessary; retain access to the full figure and do not remove context that changes its meaning. Separate added Chinese annotations from original labels, and explain the key scientific relation visibly rather than inserting an unexplained image. Put full provenance in speaker notes and a concise figure credit where useful.
 - Original figures are supporting scientific material, not a replacement for the deck's core-method interactions. Do not count a static figure, decorative highlight or image zoom alone as a core-method experiment. Existing text inside an original figure may remain unchanged, but it must be readable at the intended viewing scale; enlarge relevant regions or select a different presentation instead of shrinking the figure to fit.
 - To include a figure, copy the image into `public/images/` (e.g. `fig1.png`) and reference it
-  from a paper-specific scene widget using a **relative path** (e.g. `./images/fig1.png`) or an
-  absolute URL. Never use a root-absolute path such as `/images/fig1.png`: tutorials are served
-  from a repository sub-path, so a root-absolute path resolves to the site root and 404s.
+  from a paper-specific scene widget using a **page-relative path** (e.g. `./images/fig1.png`)
+  so it works when the tutorial is served from a repository sub-path.
 - A paper-specific scene widget may use the reusable `src/components/Figure.tsx` helper to
   display the staged original figure. The cover still requires both live, synchronized method animations.
 - When no suitable figure exists, omit it — do not fabricate figures. A best-effort PDF

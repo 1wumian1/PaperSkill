@@ -144,12 +144,12 @@ Never render generic headings such as “论文机制 / 证据”, “论文出�
 ## Deck-Wide Slide Ledger
 
 Before chapter details, list every planned teaching slide in order: chapter and scene ID,
-scientific question, view mode, learner operation, meaningful motion (or none), linked
-paper variable or representation, source locator and intended layout reference. Count
-teaching slides including the cover, excluding optional videos. Review the sequence for
-long static stretches: across a typical deck, animated interactions should recur on
-roughly half of the body pages, mixed with paper-native direct manipulation and readable
-evidence. This is an editorial target, not a hard quota. A moving photo, passive loop
+scientific question, view mode, theme episode or static theme visual and its explanatory link, learner operation, meaningful motion,
+linked paper variable or representation, source locator and intended layout reference.
+For a static page, state its teaching purpose and where mechanism interaction resumes. Count
+teaching slides including the cover, excluding optional videos. Review the early, middle and late sequences separately for the continuous animation and
+theme coverage in contract.md §3. Include a late application or failure-and-repair interaction
+that returns to the core method through a distinct episode. A moving photo, passive loop
 or CSS entrance does not qualify. If the paper calls for a different mix or length,
 state why.
 

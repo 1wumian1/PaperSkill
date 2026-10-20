@@ -134,6 +134,13 @@ diffusion-style sequence onto another paper.
 
 ## Step 5: Plan a varied story and paper-native interactions
 
+Apply the deck-wide mix in `contract.md` §3 to the ordered early, middle and late pages.
+Carry distinct theme episodes into result interpretation and applicability, and plan a late
+application or failure-and-repair interaction. For every page, record its recognizable theme episode or static theme visual and its link
+to the current concept. For a static page, record its teaching reason and where mechanism
+interaction resumes. Review theme-grounded animated interactions separately from purely
+paper-native interactions and static theme illustrations.
+
 Before selecting controls or page layouts, apply the core-method design test in
 `references/interaction-patterns.md`. Map each central contribution to a learner-operated
 mechanism and inspect the assets demo functions cited there. Record a causal specification:
@@ -223,9 +230,9 @@ For every module, specify all of these implementation fields:
 - fixed-slide fit and mobile pinch/pan, transformed pointer hit mapping, and keyboard-equivalent behavior when feasible; no mobile stacking inside a slide.
 
 Give core-method chapters meaningful active modules; evidence or boundary chapters may use `modules: []`. Passive autoplay, hover-only explanations,
-symbol clicks, and chapter-loader buttons do not count. Plan enough distinct animated interactions
-across the body to sustain the story and method explanation; approximately half of the body slides
-is a useful editorial target for a typical deck, never a validator threshold. Add operations or
+symbol clicks, and chapter-loader buttons do not count. Implement the planned animated interactions throughout the body per contract.md §3,
+including the later application or failure-and-repair scene. Review each stage of the deck
+against its own planned theme episodes and scientific state changes. Add operations or
 formal views only when they teach a distinct paper question.
 
 Keep the module visually focused: one dominant physical scene, one direct-manipulation target

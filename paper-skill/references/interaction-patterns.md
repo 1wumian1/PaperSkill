@@ -79,8 +79,8 @@ choose the view that exposes the paper mechanism. The modes are:
 - **Life scene with linked paper principle:** the same action changes the physical scene
   and a readable, source-backed quantity, curve, formula, architecture consequence or result.
 - **Paper-native experiment:** direct manipulation of a formula term, feature relation,
-  architecture choice, constraint, paper figure or verified comparison. It may omit the
-  life object while retaining the tutorial's visual palette.
+  architecture choice, constraint, paper figure or verified comparison. Keep a compact
+  theme illustration or object linked to its explanation per contract.md §3.
 
 Choose the paper-native mode when a life prop would only repeat a picture or obscure the
 scientific relation. Do not add a technical inset to every interaction to meet a quota.

@@ -21,10 +21,11 @@ The opening may use pure life animation to pose the problem. Use the comparison 
 sentence to name the paper's core method, then move promptly from intuition to mechanism.
 Choose life episodes only where their physical action helps explain the question. Other pages
 may center a paper-native diagram, formula, architecture, figure, table or interactive
-calculation; continuity can come from palette and language without another literal scene.
+calculation; include a compact theme illustration or object tied to that page's explanation,
+comparison conditions or conclusion per contract.md §3.
 Do not duplicate one photo, prop or animation across the deck with changed captions or
 controls. When life and formal views share a page, connect them through the same learner
-state. A dedicated principle or evidence page may omit life imagery entirely. Avoid making
+state. A dedicated principle or evidence page retains a small, clearly legible theme visual related to its scientific content. Avoid making
 every slide animation with a tiny technical footnote or a grid of small charts. A fixed
 canvas is not a static image. Only the sidebar thumbnail is a
 screenshot. Never substitute a GIF/video/autoplay loop, decorative entrance animation,
@@ -94,11 +95,10 @@ pages are independent units. Use the contract's soft page-count target, adjustin
 rather than padding. Typical progression: question → intuition → mechanism → operation →
 evidence → boundary. Do not mechanically repeat that sequence in every chapter.
 
-Review page roles across the entire deck before coding. The cover alone does not establish
-an animated teaching sequence: in a typical deck, meaningful learner-driven motion should
-recur on roughly half of the body pages, including later method pages. Mix life/hybrid
-animations with direct scientific manipulation and quieter evidence or explanation when
-the paper calls for them. A CSS entrance, endlessly looping background or animated image
+Review the ordered early, middle and late page sequences before coding, following
+contract.md §3. Carry meaningful learner-driven motion and distinct theme episodes through
+the method, result interpretation and applicability sections. Integrate quieter derivation
+or evidence pages with a planned return to the related mechanism interaction. A CSS entrance, endlessly looping background or animated image
 effect does not count. The suggested mix guides editing; no page count or animation
 proportion is enforced by the structural validator.
 
@@ -180,7 +180,8 @@ local formula support or semantic MathML in a page component; no fake matrix/LaT
 - Keyboard paging yields to all interactive controls. Buttons have labels and focus indicators.
 
 Do not clone the player into paper modules. Do not mount all widgets in thumbnail previews.
-Provide local screenshots in `public/thumbnails/` and set scene.thumbnail. The player uses a
+Provide local screenshots in `public/thumbnails/` and set scene.thumbnail to a page-relative URL
+such as `./thumbnails/scene.jpg`; use `./thumbnails/cover.jpg` for a local cover screenshot. The player uses a
 textual preview while an image is absent; that is a fallback, not a screenshot of the page.
 Capture at `?capture=1&slide=<scene-id>` with a 1600×900 viewport after fonts/images settle.
 If screenshot tooling is unavailable, explicitly report missing thumbnails and visual validation.

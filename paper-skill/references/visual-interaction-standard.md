@@ -21,7 +21,7 @@ Named activities, subjects, props, verbs, and concept mappings in this file are 
 
 ## 1. Tutorial-Wide Visual World
 
-Choose one anchor activity and build a reusable drawing kit before planning chapters. Reuse its visual cues in the cover and selected body scenes; paper-native pages can retain only the palette and typography.
+Choose one anchor activity and build a reusable drawing kit before planning chapters. Reuse its visual cues throughout the deck. Static and paper-native pages include a small, clearly legible theme illustration or object linked to their scientific content per contract.md §3.
 
 The kit must define:
 

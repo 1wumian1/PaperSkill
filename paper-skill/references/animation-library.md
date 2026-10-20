@@ -10,7 +10,8 @@ This life-scene contract applies to automatic analogy animations and the cover c
 Active body modules may add readable coordinate grids, feature maps, equations, architecture
 consequences, or paper plots as linked evidence. On a hybrid scene, drive the life motion and
 formal view from the same learner-controlled state. A paper-native scene may instead animate
-a changing scientific structure or result directly; it needs no repeated life prop. An
+a changing scientific structure or result directly, paired with a compact theme visual per
+contract.md §3. An
 abstract diagram with decorative motion alone is not a teaching scene.
 
 Before drawing selected life scenes, read `visual-interaction-standard.md` and define one
@@ -18,13 +19,12 @@ shared Canvas drawing kit. Reuse setting primitives, label style, semantic color
 weights where useful, but vary the focal object and action. Do not solve continuity by
 repeating one protagonist or recoloring unrelated scenes.
 
-Plan animated interactions across the deck, not only on the cover. For a typical deck,
-roughly half of body pages can carry learner-driven motion tied to a paper variable or
-result; this is editorial guidance, not a quota. Vary life episodes and paper-native
+Plan animated interactions across the deck, not only on the cover. Follow contract.md §3: learner-driven animation is the main body-page form, with distinct
+theme episodes recurring in the early, middle and late stages. Vary life episodes and paper-native
 motions so each reveals a different causal step. Preserve room for direct technical
 interaction, derivation and evidence pages.
 
-Use a shared visual vocabulary on selected life scenes while changing the physical episode, focal object, learner action and framing to suit the paper concept. Paper-native pages need no literal theme prop.
+Use a shared visual vocabulary on selected life scenes while changing the physical episode, focal object, learner action and framing to suit the paper concept. Paper-native pages keep a compact, concept-relevant theme illustration or object per contract.md §3.
 
 ## Everyday-story scene contract
 
