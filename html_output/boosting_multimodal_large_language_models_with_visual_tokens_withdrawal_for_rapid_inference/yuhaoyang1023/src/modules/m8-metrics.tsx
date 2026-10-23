@@ -154,4 +154,3 @@ export const M8Metrics: React.FC<WidgetProps> = () => {
     </div>
   );
 };
-
