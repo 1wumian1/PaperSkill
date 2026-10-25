@@ -8,8 +8,9 @@
   "paperUrl": "https://arxiv.org/abs/2203.06359",
   "participants": [
     {
-      "name": "huconghao",
-      "github": "cathy-1999"
+      "name": "胡聪浩",
+      "github": "cathy-1999",
+      "jianlunId": "0283abf9d75d72a87ea90e38374fe4a2"
     }
   ],
   "topics": ["class-incremental learning", "representation expansion", "non-exemplar"],
