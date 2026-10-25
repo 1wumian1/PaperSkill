@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "paperName": "visual_instruction_tuning",
+  "title": "Visual Instruction Tuning",
+  "authors": [],
+  "year": 2023,
+  "venue": "NeurIPS",
+  "paperUrl": "https://arxiv.org/abs/2304.08485",
+  "participants": [
+    {
+      "name": "李佩霖",
+      "github": "Lipeilin0307"
+    }
+  ],
+  "topics": [
+    "多模态",
+    "视觉语言",
+    "指令微调"
+  ],
+  "skillVersion": "1.5.0",
+  "status": "review",
+  "entry": "index.html",
+  "version": "lipeilin1025",
+  "versionDate": "2026-10-25"
+}
