@@ -1,0 +1,29 @@
+{
+  "note": "v9.3 widths.html sweep on final build (index-D2NkO_q3.css / index-FKr2OBaX.js), states=true (segments, toggles, list buttons, slider min/max, open sources). w = tutorial page's own window.innerWidth inside the iframe.",
+  "before_v9_3_default_state": [
+    {"w":960,"side":false,"body":877,"badCards":0},
+    {"w":961,"side":true,"body":534,"badCards":18},
+    {"w":1000,"side":true,"body":573,"badCards":18},
+    {"w":1024,"side":true,"body":597,"badCards":17},
+    {"w":1100,"side":true,"body":673,"badCards":7},
+    {"w":1152,"side":true,"body":725,"badCards":3},
+    {"w":1200,"side":true,"body":773,"badCards":3},
+    {"w":1279,"side":true,"body":852,"badCards":0},
+    {"w":1280,"side":true,"body":853,"badCards":0},
+    {"w":1366,"side":true,"body":939,"badCards":0},
+    {"w":1440,"side":true,"body":996,"badCards":0}
+  ],
+  "after_v9_3_all_states": [
+    {"w":960,"h":768,"side":false,"topbar":true,"body":877,"pageScrollX":false,"cards":32,"checks":213,"badStates":0},
+    {"w":961,"h":768,"side":false,"topbar":true,"body":854,"pageScrollX":false,"cards":32,"checks":213,"badStates":0},
+    {"w":1000,"h":768,"side":false,"topbar":true,"body":893,"pageScrollX":false,"cards":32,"checks":213,"badStates":0},
+    {"w":1024,"h":768,"side":false,"topbar":true,"body":917,"pageScrollX":false,"cards":32,"checks":213,"badStates":0},
+    {"w":1100,"h":900,"side":false,"topbar":true,"body":993,"pageScrollX":false,"cards":32,"checks":213,"badStates":0},
+    {"w":1152,"h":900,"side":false,"topbar":true,"body":1012,"pageScrollX":false,"cards":32,"checks":213,"badStates":0},
+    {"w":1200,"h":900,"side":false,"topbar":true,"body":1012,"pageScrollX":false,"cards":32,"checks":213,"badStates":0},
+    {"w":1279,"h":900,"side":false,"topbar":true,"body":1012,"pageScrollX":false,"cards":32,"checks":213,"badStates":0},
+    {"w":1280,"h":900,"side":true,"topbar":false,"body":853,"pageScrollX":false,"cards":32,"checks":213,"badStates":0},
+    {"w":1366,"h":900,"side":true,"topbar":false,"body":939,"pageScrollX":false,"cards":32,"checks":213,"badStates":0},
+    {"w":1440,"h":900,"side":true,"topbar":false,"body":996,"pageScrollX":false,"cards":32,"checks":213,"badStates":0}
+  ]
+}

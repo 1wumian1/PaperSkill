@@ -1,0 +1,18 @@
+{
+  "kind": "chapter",
+  "id": "chap-1",
+  "title": "导读",
+  "modules": [],
+  "scenes": [
+    {
+      "id": "guide",
+      "title": "关键数字与阅读路线",
+      "goal": "先看四个数字和它们的实验条件，再按目的选一条路线。",
+      "summary": "保留 56/576 个视觉 token、TFLOP 比例 15.63%、无需训练、预填充 2.05×",
+      "interaction": "点路线卡片跳到路线第一章的开场页",
+      "next": "一张图进了模型，要处理多少个视觉 token",
+      "notes": "四个数字的出处与条件：\n① 56 / 576：LLaVA 1.5 每张图 576 个视觉 token；官方代码 SUBSET_RATIO = 0.098，DivPrune 函数中保留数 = int(round(0.098 × 576)) = 56（https://github.com/vbdi/divprune/blob/799e2d950aa01ba7860907f5a6d86061f885dca6/LLaVA/llava/model/llava_arch.py#L146-L171 ）。代码事实。\n② 15.63%：Table 1，LLaVA 1.5-7B 上 DivPrune 的 TFLOP 比例，是 11 个数据集比例的算术平均（单个数据集 11.70%–23.89%）。论文实测。\n③ 0：DivPrune 不需要训练、微调或校准数据，只用视觉 token 自身的特征（§3、§4.1）。论文实测。\n④ 2.05×：Table 2，LLaVA-NeXT-Video-7B，8 × V100 32GB，VideoChatGPT 499 个样本平均；预填充 0.330 → 0.161 s。同表端到端只快约 1.29×（4.37 → 3.39 s），显存峰值少 0.55 GB。原版首页漏写了“视频模型”这一条件，本版补上。\n三条阅读路线来自原版十章结构，分别跳到第 2、6、7 章的开场页。\n“读前须知”三条边界分别对应第 9 章（理论 FLOPs ≠ 实测速度）、第 5 章（贪心不保证 Eq. (3) 最优）、第 2 / 10 章（几何多样性 ≠ 任务精度）。\n统一类比：野外测绘队在一张地图上布设观测点——地图格 = 视觉 token，插旗 = 保留 token，营地 = 解码层，补给 = TFLOP 预算。",
+      "componentId": "dp-guide"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "kind": "chapter",
+  "id": "chap-11",
+  "title": "10 · 先对口径再下结论",
+  "modules": [
+    {
+      "kind": "module",
+      "id": "10.1",
+      "title": "结果浏览器：差距有多大，能说明什么",
+      "desc": "切换模型和数据集；差值可在百分点与相对百分比间切换。论文为单次运行，本页只报告表中差值，不画误差带。",
+      "componentId": "dp-m10-results"
+    },
+    {
+      "kind": "module",
+      "id": "10.2",
+      "title": "公平性检查：FastV 输在哪里",
+      "desc": "把 FastV（第 3 层后约留 1 个）、随机（第 0 层留 56 个）和 DivPrune 放在一起比。",
+      "componentId": "dp-m10-fairness"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "ch10-intro",
+      "title": "两支测绘队的成绩单，先核对补给",
+      "goal": "读结果前先核对比较条件：预算对齐方式、FastV 配置与噪声。",
+      "summary": "同等补给下 FastV 第 3 层后只能留约 1 个 token",
+      "interaction": "拖 FastV 的保留数，看补给比例怎样变化（按 tflops.py 实时计算）",
+      "next": "逐表浏览结果与差值",
+      "notes": "统一类比：野外测绘队在一张地图上布设观测点——地图格 = 视觉 token，插旗 = 保留 token，营地 = 解码层，补给 = TFLOP 预算。\n\n本页情节：两支测绘队的成绩单，先核对补给。类比边界：补给比例由公式实时计算；“谁更好”仍以 Table 1 为准。\n\n右侧“精读”“要点与误区”两层分别对应原版的洞察 / 关键数字与要点 / 误区。\n\n【深入】五个口径问题与对比条件核对\n· 0.06 → 0.96：COCO CIDEr：FastV vs DivPrune（Table 1）\n· ≈ 1 个：FastV 第 3 层后保留的 token（本页外推）\n· 单次：全部结果均为单次运行，无误差条或置信区间\n· 百分点与百分比混用：GQA“下降 5.1%”实为 5.11 个百分点（相对 8.2%）；“COCO 下降 12.7%”是相对降幅 （§4.3）。\n· 评测划分：脚本显示 MMBench 用英文 dev、MMMU 用验证集、OKVQA 用 val2014、COCO 用 2017 验证集 （run_Divprune.sh），均非隐藏测试集。\n· 指标聚合：Fig. 1 纵轴把 CIDEr（可超过 1）与三个 0–1 分数直接平均 （Fig. 1）。\n· 负面信号：TextVQA 从 46.08 降到 35.97，微调的 M³ 为 44.31 （supp Table 1）。\n· 算力对齐 | 基线取“不低于目标的最小可用比例”  | 对基线略有利（论文自述）\n· FastV 配置 | K = 3，R = 0.001 ；按“保留比例”解读才能复现 15.69% | 远离默认的“第 2 层后留一半” \n· VTW 配置 | 关闭校准，7B 用 K = 4  | 第 K 层后视觉 token 全部撤走\n· 实现来源 | 作者在同一 lmms-eval 环境自行运行  | 未说明基线代码版本\n· 随机性 | 单次运行，无误差条 | 小差距无法判断是否超出评测波动",
+      "componentId": "dp-intro-10"
+    },
+    {
+      "id": "ch10-results",
+      "title": "10.1 · 结果浏览器：差距有多大，能说明什么",
+      "goal": "浏览各表各数据集的分数，并在两种差值口径间切换。",
+      "summary": "高剪枝率下 DivPrune 普遍领先同类即插即用方法；小差距无法判断方向",
+      "interaction": "选结果表、数据集、差值口径；可显示校准 / 微调 / 可变比例方法",
+      "next": "FastV 输在哪里",
+      "notes": "表格数值逐格转录自 Table 1 / 2 与补充材料 Table 1。论文为单次运行，没有逐样本结果或置信区间，本页不估算误差带、不做显著性判断。\nTFLOP 列中 “Variable” 表示保留数随样本变化。△ = 使用校准集，• = 使用微调；DivPrune* = 对齐 PruMerge 保留比例的 DivPrune。\n颜色：只有 DivPrune（绿）、FastV（红）、VTW（紫）用语义色，其余方法统一用灰蓝。",
+      "componentId": "dp-m10-results",
+      "moduleId": "10.1"
+    },
+    {
+      "id": "ch10-fairness",
+      "title": "10.2 · 公平性检查：FastV 输在哪里",
+      "goal": "检查 FastV 的低分有多少来自配置，以及 Fig. 1 的平均方式。",
+      "summary": "随机留 56 个已比 FastV 高出一大截；Fig. 1 的排序对平均方式不敏感",
+      "interaction": "切换检查项 A / B；B 中切换平均方式",
+      "next": "哪些结论已证明、哪些仍未知",
+      "notes": "A：FastV 来自 Table 1（K = 3，之后约保留 1 个，15.69%），随机来自 Table 4（Layer 0 保留 56 个）；两组数字跨表，比较只能作为提示（本页推断）。\nB：Fig. 1 纵轴 = COCO CIDEr、OKVQA、POPE、MMB 的平均（后三项 ÷ 100）；复算原模型 0.783、DivPrune 0.721，与图中读数一致（目测读图）。CIDEr ÷ 原模型值为本页外推。",
+      "componentId": "dp-m10-fairness",
+      "moduleId": "10.2"
+    }
+  ]
+}

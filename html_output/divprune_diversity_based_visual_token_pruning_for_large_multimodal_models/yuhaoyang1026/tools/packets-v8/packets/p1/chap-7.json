@@ -1,0 +1,55 @@
+{
+  "kind": "chapter",
+  "id": "chap-7",
+  "title": "06 · 从伪代码到 LLaVA",
+  "modules": [
+    {
+      "kind": "module",
+      "id": "6.1",
+      "title": "论文 ↔ 代码对照面板",
+      "desc": "选一个条目：左边论文怎么说，右边代码怎么做（固定 commit 行号）。可按状态筛选。",
+      "componentId": "dp-m6-codemap"
+    },
+    {
+      "kind": "module",
+      "id": "6.2",
+      "title": "留几个、按什么顺序放回去",
+      "desc": "拖 SUBSET_RATIO 看保留个数；再看示意图块先按选择顺序、再按位置排序送入 LLM。",
+      "componentId": "dp-m6-keep"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "ch06-intro",
+      "title": "把测绘图压在实地上逐项核对",
+      "goal": "先看论文与官方代码在哪些地方一致、哪里有差异。",
+      "summary": "13 个对照条目：一致 5、有差异 3、论文未说明 3、代码缺失 2",
+      "interaction": "拖动核对进度，看清单逐项亮起（数据与 6.1 同源）",
+      "next": "逐条对照论文与代码",
+      "notes": "统一类比：野外测绘队在一张地图上布设观测点——地图格 = 视觉 token，插旗 = 保留 token，营地 = 解码层，补给 = TFLOP 预算。\n\n本页情节：把测绘图压在实地上逐项核对。类比边界：“缺失”指公开仓库里找不到对应实现，不代表作者没有做过。\n\n右侧“精读”“要点与误区”两层分别对应原版的洞察 / 关键数字与要点 / 误区。\n\n【深入】位置编码、边界情况与缺失的实验代码\n位置编码（代码推断）：`generate` 路径中 `position_ids` 通常为 None，Transformers 会按剪枝后的长度从 0 重新连续编号——相对顺序不变，RoPE 位置间距被“压紧”。论文未讨论，本页未运行验证。\n边界情况（阅读推断）：代码不维护候选集 R，每轮对全部 M 列取 argmax。若存在完全相同的 token，或半精度让 1 − cos(x, x) 略大于 0，理论上可能重复选择。未实测。\n· 层内剪枝（Table 3 的 Layer 1–3）：`LAYER_INDEX` 不为 0 时只记录长度，无剪枝实现 （llava_arch.py L352–385）。\n· 视频模型：依赖外部 `llavavid` 包，仓库中没有对应的 DivPrune 修改。\n· 效率脚本 `eval_time.sh` 用 LLaVA-1.6 + COCO （eval_time.sh / llava.py L424–449），与 Table 2 的视频设置不同 （§4.5）。\n· `run_Divprune.sh` 运行名写 7B，实际加载 13B（第 8、15 行）（run_Divprune.sh）。",
+      "componentId": "dp-intro-06"
+    },
+    {
+      "id": "ch06-codemap",
+      "title": "6.1 · 论文 ↔ 代码对照面板",
+      "goal": "逐条对照论文描述与官方代码（固定 commit 行号）。",
+      "summary": "主干一致；候选集 R、保留比例、Eq. (5) 符号有差异；层内剪枝与视频模型代码缺失",
+      "interaction": "按状态筛选，点条目查看论文 / 代码 / 结论",
+      "next": "留几个、按什么顺序放回去",
+      "notes": "代码摘录逐字取自 commit 799e2d9，页面只留关键 2–4 行，完整上下文见 GitHub 链接。\n补充：位置编码在 generate 路径中按剪枝后长度重新连续编号（代码推断，未运行验证）；run_Divprune.sh 运行名写 7B、实际加载 13B（第 8、15 行）。\n颜色：绿 = 一致、黄 = 有差异、蓝 = 论文未说明、红 = 公开代码缺失。第 6 章开场的核对清单读同一份数据。",
+      "componentId": "dp-m6-codemap",
+      "moduleId": "6.1"
+    },
+    {
+      "id": "ch06-keep",
+      "title": "6.2 · 留几个、按什么顺序放回去",
+      "goal": "看保留个数怎么算，以及保留 token 送入 LLM 时的顺序。",
+      "summary": "M̃ = int(round(r·M))；送入 LLM 前按位置排序，选择顺序被丢弃",
+      "interaction": "拖 SUBSET_RATIO、选 M、切换两种顺序",
+      "next": "在第几层剪最好",
+      "notes": "代码事实：llava_arch.py 第 153 行 threshold_terms = int(round(threshold_ratio * image_feature_length))；L378–L381 keep_indexs.sort()。\n图块图是程序生成的 24×24 示意场景（固定 576 个图块，特征为颜色向量），只用于展示选择与排序逻辑；保留个数按代码公式对任意 M 计算。\n补充材料写“剪枝率 91.2%”，按它只能保留 51 个，TFLOPs 与 Table 1 不符。",
+      "componentId": "dp-m6-keep",
+      "moduleId": "6.2"
+    }
+  ]
+}

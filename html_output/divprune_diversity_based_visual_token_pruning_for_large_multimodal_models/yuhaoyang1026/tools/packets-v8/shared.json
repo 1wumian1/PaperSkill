@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "titleEn": "DivPrune: Diversity-based Visual Token Pruning for Large Multimodal Models",
+    "titleZh": "DivPrune：基于多样性的视觉 Token 剪枝",
+    "venue": "CVPR 2025 · Saeed Ranjbar Alvar, Gursimran Singh, Mohammad Akbari, Yong Zhang · Huawei Technologies Canada",
+    "authors": "Saeed Ranjbar Alvar, Gursimran Singh, Mohammad Akbari, Yong Zhang",
+    "affiliation": "Huawei Technologies Canada Co., Ltd.",
+    "domain": "多模态大模型 · 推理加速",
+    "coreProblem": "只能留下一小部分视觉 token 时，按“重要性”挑会扎堆。",
+    "coreInsight": "DivPrune 把剪枝写成 Max-Min 多样性问题：每轮挑离已选集合最远的 token，用少量 token 覆盖整张图；无需训练与校准。",
+    "keywords": [
+      "视觉 token 剪枝",
+      "Max-Min 多样性",
+      "即插即用",
+      "TFLOPs"
+    ]
+  },
+  "hero": {
+    "oldMethod": {
+      "title": "重要性 Top-k（FastV 等）",
+      "desc": "给 token 打分只留高分，名额被相似 token 占满。",
+      "componentId": "dp-cover"
+    },
+    "newMethod": {
+      "title": "Max-Min 多样性选择（DivPrune）",
+      "desc": "每轮挑离已选集合最远的 token，覆盖整张图。",
+      "componentId": "dp-cover"
+    }
+  }
+}
