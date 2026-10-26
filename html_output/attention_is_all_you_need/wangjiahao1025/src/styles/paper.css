@@ -1,0 +1,21 @@
+/* Paper-specific overrides. This is the ONLY stylesheet the generator edits.
+   Keep the semantic color roles from tokens.css stable (see contract.md §5):
+   --blue = guidance/current, --green = success/paper method, --red = failure/old,
+   --orange = emphasis, --purple = auxiliary. Only append metaphor scene colors
+   or tune scene backgrounds here. Do NOT rewrite tokens.css / components.css. */
+
+:root {
+  /* 排练室主题：暖木色场景底 + 谱架深棕；语义色保持不变 */
+  --paper-scene-bg: #fbf7f2;
+  --paper-scene-bg-cool: #f4faf6;
+  --paper-wood: #92400e;
+  --paper-wood-soft: #f3ddc9;
+  --paper-accent-2: #d97706;
+}
+
+/* SVG 文本的 clientRect 会额外计入行盒高度，导致几何审计误报溢出；
+   把行高收紧为 1，让文字包围盒与绘制区域一致。 */
+.ppt-body svg text,
+.ppt-cover svg text {
+  line-height: 1;
+}

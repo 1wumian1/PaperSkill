@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "paperName": "attention_is_all_you_need",
+  "title": "Attention Is All You Need",
+  "authors": [],
+  "year": null,
+  "venue": "",
+  "paperUrl": "https://arxiv.org/abs/1706.03762",
+  "participants": [
+    {
+      "name": "Wang Jiahao",
+      "github": "JadeWhisper",
+      "jianlunId": "2ed6a331d7218fbdd3f52af92911622c"
+    }
+  ],
+  "topics": [],
+  "skillVersion": "1.5.0",
+  "status": "review",
+  "entry": "index.html",
+  "version": "wangjiahao1025",
+  "versionDate": "2026-10-25"
+}
