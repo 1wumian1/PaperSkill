@@ -1,0 +1,55 @@
+{
+  "kind": "chapter",
+  "id": "chap-2",
+  "title": "01 · 一张图 = 576 个 token",
+  "modules": [
+    {
+      "kind": "module",
+      "id": "1.1",
+      "title": "一张图片在 LLaVA 里走过的路",
+      "desc": "点“下一步”跟随一次推理；切换模型看 token 数，打开开关看 DivPrune 插在哪里。",
+      "componentId": "dp-m1-pipeline"
+    },
+    {
+      "kind": "module",
+      "id": "1.2",
+      "title": "token 账本：视觉占多少，二次项占多少",
+      "desc": "切换模型与数据集，看序列构成和单层计算量的三项占比。",
+      "componentId": "dp-m1-ledger"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "ch01-intro",
+      "title": "地图切成格，每一格都要勘测",
+      "goal": "看清一张图会变成多少个视觉 token，以及它们在 LLM 里的工作量。",
+      "summary": "LLaVA 1.5 一张图 576 个视觉 token；这个长度下计算量近似线性",
+      "interaction": "切换模型看格子数与每层工作量；右侧在导语 / 精读 / 要点之间切换",
+      "next": "看一次推理里 DivPrune 插在哪里",
+      "notes": "统一类比：野外测绘队在一张地图上布设观测点——地图格 = 视觉 token，插旗 = 保留 token，营地 = 解码层，补给 = TFLOP 预算。\n\n本页情节：地图切成格，每一格都要勘测。类比边界：类比比的是工作量（计算量），不是用时；用时与实测速度见第 9 章。\n\n右侧“精读”“要点与误区”两层分别对应原版的洞察 / 关键数字与要点 / 误区。\n\n【深入】账单细节：576 从哪来，二次项为什么不是大头\n· 576：LLaVA 1.5 视觉 token（24 × 24 图块）\n· ≈ 3%：μ ≈ 600 时二次项占单层计算（本页外推）\n· 1152：视频 8 帧 × 144\n576 来自 LLaVA 1.5 的视觉编码器配置：CLIP ViT-L/14、输入 336×336，336 ÷ 14 = 24，24 × 24 = 576（LLaVA 官方配置，论文只写了 576 （§4.1））。每个 token 是投影层输出的 4096 维向量 （§4.2）。\n单层计算量为 4nd² + 2n²d + 2ndm，二次项与线性项之比约 2n / (4d + 2m)：LLaVA 1.5-7B 中 n ≈ 600 时约 3%，n ≈ 2300 时约 12% 〔公式外推〕。所以剪掉约 90% 的视觉 token，TFLOPs 大约降到 15%，而不是 1%。\nKV cache 让解码时不必重算旧 token 的 K、V，但每一步注意力仍要读取全部缓存；视觉 token 越多，缓存越大、读得越多。",
+      "componentId": "dp-intro-01"
+    },
+    {
+      "id": "ch01-pipeline",
+      "title": "1.1 · 一张图片在 LLaVA 里走过的路",
+      "goal": "跟随一次推理，看 DivPrune 插在流水线的哪一步。",
+      "summary": "剪枝在投影层之后、拼接之前，只在预填充时做一次",
+      "interaction": "选模型、开关 DivPrune、按上一步 / 下一步",
+      "next": "这些 token 占了多少计算",
+      "notes": "视觉 token 数：LLaVA 1.5 为 576（24×24），LLaVA 1.6 各数据集平均 1598–2292，视频 8 帧 × 144 = 1152（§4.1、tflops.py）。问题长度取代码中各数据集平均文本长度（图像约 45、视频约 69），仅作示意。\n35 个前缀 token 是代码中硬编码的 SYS_TOKEN_LEN（https://github.com/vbdi/divprune/blob/799e2d950aa01ba7860907f5a6d86061f885dca6/LLaVA/llava/model/llava_arch.py#L365-L367 ）；视频模型的 DivPrune 实现不在公开代码中，前缀长度未知。\n颜色：蓝 = 当前步骤 / 视觉 token；绿 = DivPrune 保留的 token；虚框 = 被剪掉的位置。格子只表示数量，哪些位置被选中见第 5、6 章。",
+      "componentId": "dp-m1-pipeline",
+      "moduleId": "1.1"
+    },
+    {
+      "id": "ch01-ledger",
+      "title": "1.2 · token 账本：视觉占多少，二次项占多少",
+      "goal": "看视觉 token 在序列里占多少，单层计算量的三项各占多少。",
+      "summary": "视觉占序列的绝大部分；二次项只占单层计算的 3%–12%",
+      "interaction": "切换模型与数据集",
+      "next": "按“重要性”挑 token 为什么会扎堆",
+      "notes": "文本与视觉 token 数为 tflops.py 中的硬编码平均值（代码事实）；三项占比按 Eq. (5) 单层项（+ 号）计算（公式外推）。二次项与线性项之比约 2n / (4d + 2m)。\n三项用同一色相的深浅区分，不承担状态含义。",
+      "componentId": "dp-m1-ledger",
+      "moduleId": "1.2"
+    }
+  ]
+}

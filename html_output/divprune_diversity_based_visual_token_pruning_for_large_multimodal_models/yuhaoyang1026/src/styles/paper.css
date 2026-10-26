@@ -1,0 +1,52 @@
+/* DivPrune 论文专属样式（contract.md §10 允许的唯一样式文件）。
+   “晨光实验室”装饰层：冷白底 + 很淡的珊瑚 / 蓝紫 / 薄荷氛围色 + 静态 Max-Min 星座（高亮点由脚本对点集运行
+   Max-Min 贪心选出）。装饰层不承担状态含义；功能色沿用 tokens.css 的 --blue / --green / --red / --orange。
+   这里只调整场景背景与面板质感，没有修改 tokens.css / components.css / presentation.css。 */
+
+:root {
+  --dp-glass: rgba(255, 255, 255, 0.78);
+  --dp-shadow: 0 22px 48px -30px rgba(40, 56, 120, 0.38);
+  --dp-deco-gradient: linear-gradient(100deg, #ff7a5c 0%, #e8508a 34%, #8a5cf0 66%, #4a6bd8 100%);
+}
+
+.ppt-page,
+.ppt-cover {
+  background:
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900'%3E%3Cstyle%3Eline{stroke:%234a6bd8;stroke-opacity:.10;stroke-width:1.2}circle{fill:%2321324a;fill-opacity:.16}.r circle{fill:none;stroke:%23ff7a5c;stroke-opacity:.5;stroke-width:1.6}.r .f{fill:%23ff7a5c;fill-opacity:.55;stroke:none}%3C/style%3E%3Cg%3E%3Cline x1='0' y1='829' x2='5' y2='822'/%3E%3Cline x1='1117' y1='48' x2='1201' y2='23'/%3E%3Cline x1='1476' y1='727' x2='1413' y2='775'/%3E%3Cline x1='197' y1='462' x2='189' y2='440'/%3E%3Cline x1='1477' y1='620' x2='1456' y2='613'/%3E%3Cline x1='1459' y1='818' x2='1416' y2='817'/%3E%3Cline x1='1500' y1='502' x2='1419' y2='503'/%3E%3Cline x1='94' y1='246' x2='17' y2='223'/%3E%3Cline x1='1454' y1='49' x2='1429' y2='33'/%3E%3Cline x1='1063' y1='832' x2='1234' y2='851'/%3E%3Cline x1='1450' y1='412' x2='1412' y2='358'/%3E%3Cline x1='1381' y1='572' x2='1419' y2='503'/%3E%3Cline x1='1503' y1='357' x2='1450' y2='412'/%3E%3Cline x1='178' y1='737' x2='120' y2='696'/%3E%3Cline x1='124' y1='366' x2='189' y2='440'/%3E%3Cline x1='246' y1='70' x2='128' y2='97'/%3E%3Cline x1='1594' y1='198' x2='1469' y2='180'/%3E%3Cline x1='220' y1='830' x2='176' y2='827'/%3E%3Cline x1='1415' y1='802' x2='1416' y2='817'/%3E%3Cline x1='1416' y1='817' x2='1415' y2='802'/%3E%3Cline x1='17' y1='223' x2='94' y2='246'/%3E%3Cline x1='122' y1='1' x2='136' y2='9'/%3E%3Cline x1='1411' y1='212' x2='1469' y2='180'/%3E%3Cline x1='189' y1='440' x2='197' y2='462'/%3E%3Cline x1='5' y1='822' x2='0' y2='829'/%3E%3Cline x1='34' y1='810' x2='5' y2='822'/%3E%3Cline x1='301' y1='872' x2='220' y2='830'/%3E%3Cline x1='84' y1='692' x2='120' y2='696'/%3E%3Cline x1='176' y1='827' x2='220' y2='830'/%3E%3Cline x1='209' y1='619' x2='120' y2='696'/%3E%3Cline x1='1429' y1='33' x2='1454' y2='49'/%3E%3Cline x1='1413' y1='775' x2='1415' y2='802'/%3E%3Cline x1='1588' y1='859' x2='1577' y2='895'/%3E%3Cline x1='1412' y1='358' x2='1450' y2='412'/%3E%3Cline x1='1419' y1='503' x2='1381' y2='572'/%3E%3Cline x1='1577' y1='895' x2='1588' y2='859'/%3E%3Cline x1='1469' y1='180' x2='1411' y2='212'/%3E%3Cline x1='1234' y1='851' x2='1063' y2='832'/%3E%3Cline x1='1201' y1='23' x2='1117' y2='48'/%3E%3Cline x1='120' y1='696' x2='84' y2='692'/%3E%3Cline x1='1456' y1='613' x2='1477' y2='620'/%3E%3Cline x1='1534' y1='23' x2='1454' y2='49'/%3E%3Cline x1='59' y1='122' x2='128' y2='97'/%3E%3Cline x1='128' y1='97' x2='59' y2='122'/%3E%3Cline x1='136' y1='9' x2='122' y2='1'/%3E%3C/g%3E%3Cg%3E%3Ccircle cx='0' cy='829' r='2.6'/%3E%3Ccircle cx='1117' cy='48' r='2.6'/%3E%3Ccircle cx='1476' cy='727' r='2.6'/%3E%3Ccircle cx='197' cy='462' r='2.6'/%3E%3Ccircle cx='1477' cy='620' r='2.6'/%3E%3Ccircle cx='1459' cy='818' r='2.6'/%3E%3Ccircle cx='1500' cy='502' r='2.6'/%3E%3Ccircle cx='94' cy='246' r='2.6'/%3E%3Ccircle cx='1454' cy='49' r='2.6'/%3E%3Ccircle cx='1063' cy='832' r='2.6'/%3E%3Ccircle cx='1450' cy='412' r='2.6'/%3E%3Ccircle cx='1381' cy='572' r='2.6'/%3E%3Ccircle cx='1503' cy='357' r='2.6'/%3E%3Ccircle cx='178' cy='737' r='2.6'/%3E%3Ccircle cx='124' cy='366' r='2.6'/%3E%3Ccircle cx='246' cy='70' r='2.6'/%3E%3Ccircle cx='1594' cy='198' r='2.6'/%3E%3Ccircle cx='220' cy='830' r='2.6'/%3E%3Ccircle cx='1415' cy='802' r='2.6'/%3E%3Ccircle cx='1416' cy='817' r='2.6'/%3E%3Ccircle cx='17' cy='223' r='2.6'/%3E%3Ccircle cx='122' cy='1' r='2.6'/%3E%3Ccircle cx='1411' cy='212' r='2.6'/%3E%3Ccircle cx='189' cy='440' r='2.6'/%3E%3Ccircle cx='5' cy='822' r='2.6'/%3E%3Ccircle cx='34' cy='810' r='2.6'/%3E%3Ccircle cx='301' cy='872' r='2.6'/%3E%3Ccircle cx='84' cy='692' r='2.6'/%3E%3Ccircle cx='797' cy='29' r='2.6'/%3E%3Ccircle cx='176' cy='827' r='2.6'/%3E%3Ccircle cx='209' cy='619' r='2.6'/%3E%3Ccircle cx='1429' cy='33' r='2.6'/%3E%3Ccircle cx='1413' cy='775' r='2.6'/%3E%3Ccircle cx='1588' cy='859' r='2.6'/%3E%3Ccircle cx='1412' cy='358' r='2.6'/%3E%3Ccircle cx='1419' cy='503' r='2.6'/%3E%3Ccircle cx='1577' cy='895' r='2.6'/%3E%3Ccircle cx='1469' cy='180' r='2.6'/%3E%3Ccircle cx='1234' cy='851' r='2.6'/%3E%3Ccircle cx='1201' cy='23' r='2.6'/%3E%3Ccircle cx='120' cy='696' r='2.6'/%3E%3Ccircle cx='1456' cy='613' r='2.6'/%3E%3Ccircle cx='1534' cy='23' r='2.6'/%3E%3Ccircle cx='59' cy='122' r='2.6'/%3E%3Ccircle cx='128' cy='97' r='2.6'/%3E%3Ccircle cx='136' cy='9' r='2.6'/%3E%3C/g%3E%3Cg class='r'%3E%3Ccircle cx='797' cy='29' r='9'/%3E%3Ccircle cx='797' cy='29' r='3.4' class='f'/%3E%3Ccircle cx='1577' cy='895' r='9'/%3E%3Ccircle cx='1577' cy='895' r='3.4' class='f'/%3E%3Ccircle cx='0' cy='829' r='9'/%3E%3Ccircle cx='0' cy='829' r='3.4' class='f'/%3E%3Ccircle cx='1534' cy='23' r='9'/%3E%3Ccircle cx='1534' cy='23' r='3.4' class='f'/%3E%3Ccircle cx='59' cy='122' r='9'/%3E%3Ccircle cx='59' cy='122' r='3.4' class='f'/%3E%3Ccircle cx='1063' cy='832' r='9'/%3E%3Ccircle cx='1063' cy='832' r='3.4' class='f'/%3E%3C/g%3E%3C/svg%3E") center / 1600px 900px no-repeat,
+    radial-gradient(900px 500px at 94% -4%, rgba(255, 122, 92, 0.1), transparent 70%),
+    radial-gradient(820px 520px at -4% 104%, rgba(104, 124, 255, 0.1), transparent 70%),
+    radial-gradient(700px 380px at 56% 108%, rgba(63, 191, 166, 0.08), transparent 70%),
+    #fbfcff;
+}
+
+/* 页眉左上一小段装饰渐变，延续原版的章节色带 */
+.ppt-heading::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -16px;
+  width: 112px;
+  height: 5px;
+  border-radius: 5px;
+  background: var(--dp-deco-gradient);
+}
+
+/* 封面顶部区固定 190px：作者行 + 两行标题 + 核心问题按框架默认行高需要 206px，这里只收紧行高与间距（字号不变） */
+.ppt-cover-top { gap: 6px; }
+.ppt-cover-top .ppt-type-small, .ppt-cover-top .ppt-type-subtitle { line-height: 1.3; }
+.ppt-cover-top.is-long-title .ppt-type-display { line-height: 1.22; }
+
+/* 封面：英文标题用原版的渐变字；两侧面板为毛玻璃 */
+.ppt-cover-top .ppt-type-display {
+  background: var(--dp-deco-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ppt-cover-panel {
+  background: rgba(255, 255, 255, 0.74);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 1px rgba(33, 50, 74, 0.06), var(--dp-shadow);
+  backdrop-filter: blur(10px);
+}
+.ppt-cover-panel.is-new { background: rgba(243, 249, 246, 0.82); }

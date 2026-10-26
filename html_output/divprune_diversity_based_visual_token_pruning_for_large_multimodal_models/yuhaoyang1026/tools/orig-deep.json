@@ -1,0 +1,461 @@
+{
+ "chapters": {
+  "chap-1": {
+   "title": "一张图 = 576 个 token",
+   "deep": [
+    "【深入】账单细节：576 从哪来，二次项为什么不是大头\n· 576：LLaVA 1.5 视觉 token（24 × 24 图块）\n· ≈ 3%：μ ≈ 600 时二次项占单层计算（本页外推）\n· 1152：视频 8 帧 × 144\n576 来自 LLaVA 1.5 的视觉编码器配置：CLIP ViT-L/14、输入 336×336，336 ÷ 14 = 24，24 × 24 = 576（LLaVA 官方配置，论文只写了 576 （§4.1））。每个 token 是投影层输出的 4096 维向量 （§4.2）。\n单层计算量为 4nd² + 2n²d + 2ndm，二次项与线性项之比约 2n / (4d + 2m)：LLaVA 1.5-7B 中 n ≈ 600 时约 3%，n ≈ 2300 时约 12% 〔公式外推〕。所以剪掉约 90% 的视觉 token，TFLOPs 大约降到 15%，而不是 1%。\nKV cache 让解码时不必重算旧 token 的 K、V，但每一步注意力仍要读取全部缓存；视觉 token 越多，缓存越大、读得越多。"
+   ],
+   "modules": [
+    {
+     "id": "1.1",
+     "title": "一张图片在 LLaVA 里走过的路",
+     "desc": "点“下一步”跟随一次推理；切换模型看 token 数，打开开关看 DivPrune 插在哪里。"
+    },
+    {
+     "id": "1.2",
+     "title": "token 账本：视觉占多少，二次项占多少",
+     "desc": "切换模型与数据集，看序列构成和单层计算量的三项占比。"
+    }
+   ],
+   "analogy": "{\"title\":\"沙越多，漏得越久\",\"text\":\"每粒沙是一个视觉 token。剪枝不改沙漏本身（模型参数），只是少放沙。\",\"componentId\":\"analogy-scene\"}"
+  },
+  "chap-2": {
+   "title": "按“重要性”挑 token，为什么会扎堆",
+   "deep": [
+    "【深入】方法谱系：在哪里剪、靠什么剪、付出什么代价\n[表] [[\"FastV\",\"LLM 第 K 层之后\",\"第 K 层注意力分数\",\"无需训练\",\"即插即用主对手\"],[\"PruMerge\",\"视觉编码器输出\",\"注意力稀疏性 + 聚类合并\",\"保留数随样本变化\",\"可变比例对手\"],[\"VTW\",\"LLM 第 K 层之后\",\"撤走全部视觉 token\",\"默认需校准选层（本文关闭）\",\"即插即用主对手\"],[\"FitPrune\",\"LLM 内部多层\",\"校准集上的注意力差异\",\"需要校准集\",\"完整性对照\"],[\"M³\",\"视觉编码器输出\",\"嵌套多粒度表示\",\"需要微调\",\"完整性对照\"],[\"DivPrune\",\"LLM 第 0 层之前\",\"特征间余弦距离（Max-Min）\",\"无需训练、无需校准\",\"本文方法\"]]\nFig. 3(b) 显示在 1000 个 SeedBench 样本上，DivPrune 的 Max-Min 距离整体高于 FastV （Fig. 3(b)）。但这正是 DivPrune 直接优化的量，胜出在意料之中，不能单独证明“多样性带来精度”。"
+   ],
+   "modules": [
+    {
+     "id": "2.1",
+     "title": "同一预算，三种挑法",
+     "desc": "示意点云，三个场景：高分集中在左下簇、高分分散在各簇、远处有被设定为无关的离群点。切换场景与方法，比较覆盖、冗余和（场景设定的）相关性——没有哪种挑法在所有场景都占优。"
+    }
+   ],
+   "analogy": "{\"title\":\"只在手电筒照到的地方钉图钉\",\"text\":\"亮处钉子越钉越密，暗处一颗也没有——每颗单看都“重要”，合起来却大量重复。\",\"componentId\":\"analogy-scene\"}"
+  },
+  "chap-3": {
+   "title": "理想目标算不动，于是换一个",
+   "deep": [
+    "【深入】它不看问题：query-agnostic 的后果\n· 3.4×10⁷⁸：C(576, 56)：576 选 56 的挑法数（本页外推）\n· 56：LLaVA 1.5 保留的视觉 token\n· −10.1：TextVQA 降幅（supp Table 1）\n官方实现只把视觉段的特征传给 DivPrune （llava_arch.py L352–385）：同一张图无论问什么，留下的 56 个 token 都一样 〔代码事实〕。选择可以在进入 LLM 前一次完成，但当问题只关心很小的区域（如图中小字）时，相关图块可能恰好被剪掉。\n补充材料中 TextVQA 从 46.08 降到 35.97，降幅明显大于 VizWiz、VQAv2 （supp Table 1），与这个解释相符；论文没有分析原因，这里是本页推测。"
+   ],
+   "modules": [
+    {
+     "id": "3.1",
+     "title": "组合爆炸计算器",
+     "desc": "选 M、调保留比例，看子集数量 C(M, M̃) 落在对数刻度尺的哪里。"
+    }
+   ],
+   "analogy": "{\"title\":\"永远转不完的计数轮\",\"text\":\"把每种挑法都试一遍，计数轮要转到 10⁷⁸——只能换一条好执行的规则。\",\"componentId\":\"analogy-scene\"}"
+  },
+  "chap-4": {
+   "title": "Max-Min：让最近的一对尽量远",
+   "deep": [
+    "【深入】两处值得知道的数学细节\n1 − cos 不满足三角不等式：取 0°、45°、90° 三个方向，d(0°, 90°) = 1，而 d(0°, 45°) + d(45°, 90°) ≈ 0.586 〔公式外推〕。Max-Min 选择问题的经典“贪心 2-近似”保证依赖三角不等式，论文没有讨论近似保证，不能直接套用（本页补充）。\n为什么不是“距离总和最大”：Max-Sum 可能挑出“两大堆彼此很远、堆内高度重复”的子集；Max-Min 只看最近一对，直接针对冗余。论文没有比较 Max-Sum，Table 4 只比较了随机与 Min-Max （Table 4）。"
+   ],
+   "modules": [
+    {
+     "id": "4.1",
+     "title": "余弦距离：只看方向",
+     "desc": "拖动夹角和长度：长度变了，欧氏距离跟着变，余弦距离不动。"
+    },
+    {
+     "id": "4.2",
+     "title": "找短板：你选的子集得几分",
+     "desc": "点选 4 个点，红线是最近的一对；试着让它最长，再和穷举最优比。"
+    }
+   ],
+   "analogy": "{\"title\":\"罗盘上两根指针\",\"text\":\"只读两根指针张开的角度，不管指针有多长——这就是余弦距离。\",\"componentId\":\"analogy-scene\"}"
+  },
+  "chap-5": {
+   "title": "Algorithm 1：一次挑一个",
+   "deep": [
+    "【深入】开销有多大，“最高多样性”该怎么理解\n· 56：LLaVA 1.5 的选择轮数（= M̃）\n· ≈ 0.04%：距离矩阵占一次 prefill 计算量（本页外推）\n· +11 ms：预填充比 FastV / VTW 慢（Table 2）\n距离矩阵约 576² × 4096 ≈ 1.4 × 10⁹ 次乘加，只占 Eq. (5) 口径下一次预填充（3.228 TFLOPs）的 0.04%–0.08% 〔公式外推〕。但贪心循环逐轮串行，Table 2 中 DivPrune 的预填充比基线多约 11 ms（0.161 vs 0.150 s），论文归因于距离计算 （§4.5）。\n摘要说 DivPrune “达到最高多样性” （Abstract），应理解为“在所比较方法中最高”。第一阶段确定性地选最孤立的 token，结果可复现，但最孤立的也可能是噪声图块，论文未讨论（本页分析）。"
+   ],
+   "modules": [
+    {
+     "id": "5.1",
+     "title": "照着伪代码跑一遍",
+     "desc": "每按一次“下一步”，伪代码对应行高亮；细线连向每个候选的“最近者”，柱子就是数组 D。"
+    },
+    {
+     "id": "5.2",
+     "title": "贪心 vs 穷举",
+     "desc": "12 个点选 4 个，同时跑 Algorithm 1 和穷举；找一个反例，或批量统计 200 组。"
+    }
+   ],
+   "analogy": "{\"title\":\"在地图最大的空白处落针\",\"text\":\"每一针都落在离已有图钉最远的地方，落下就不再拔起。\",\"componentId\":\"analogy-scene\"}"
+  },
+  "chap-6": {
+   "title": "从伪代码到 LLaVA：逐行对照",
+   "deep": [
+    "【深入】位置编码、边界情况与缺失的实验代码\n位置编码（代码推断）：`generate` 路径中 `position_ids` 通常为 None，Transformers 会按剪枝后的长度从 0 重新连续编号——相对顺序不变，RoPE 位置间距被“压紧”。论文未讨论，本页未运行验证。\n边界情况（阅读推断）：代码不维护候选集 R，每轮对全部 M 列取 argmax。若存在完全相同的 token，或半精度让 1 − cos(x, x) 略大于 0，理论上可能重复选择。未实测。\n· 层内剪枝（Table 3 的 Layer 1–3）：`LAYER_INDEX` 不为 0 时只记录长度，无剪枝实现 （llava_arch.py L352–385）。\n· 视频模型：依赖外部 `llavavid` 包，仓库中没有对应的 DivPrune 修改。\n· 效率脚本 `eval_time.sh` 用 LLaVA-1.6 + COCO （eval_time.sh / llava.py L424–449），与 Table 2 的视频设置不同 （§4.5）。\n· `run_Divprune.sh` 运行名写 7B，实际加载 13B（第 8、15 行）（run_Divprune.sh）。"
+   ],
+   "modules": [
+    {
+     "id": "6.1",
+     "title": "论文 ↔ 代码对照面板",
+     "desc": "选一个条目：左边论文怎么说，右边代码怎么做（固定 commit 行号）。可按状态筛选。"
+    },
+    {
+     "id": "6.2",
+     "title": "留几个、按什么顺序放回去",
+     "desc": "拖 SUBSET_RATIO 看保留个数；再看示意图块先按选择顺序、再按位置排序送入 LLM。"
+    }
+   ],
+   "analogy": "{\"title\":\"把蓝图压在成品上\",\"text\":\"一处处比对：照做了的打勾，改了的圈出，图上没画的标问号。\",\"componentId\":\"analogy-scene\"}"
+  },
+  "chap-7": {
+   "title": "在哪一层剪：Table 3 藏着第二个变量",
+   "deep": [
+    "【深入】为什么 FastV 不能在第 0 层剪，以及两处表述细节\nFastV 的依据是第 K 层的注意力，必须先跑完前 K 层（其论文标题就是“第 2 层之后只值一半 token”）（FastV 原论文）。DivPrune 只用投影特征，可以在第 0 层剪，32 层全部受益——这是按 TFLOPs 对齐时的结构性优势。\n因果注意力下，前 K 层里问题 token 已从全部视觉 token 读取信息，晚剪可能保留更多信息（本页解释，论文未展开）。另外，正文说该消融“使用 5 个数据集” （§4.6），表中只有 4 列；19.61% 与 Table 1 的 15.63% 是同一配置，差别来自取平均的数据集不同 〔公式外推〕。"
+   ],
+   "modules": [
+    {
+     "id": "7.1",
+     "title": "固定预算下，每一层留了几个 token",
+     "desc": "切换剪枝层；柱高 = 该层处理的 token 数。打开“保留数相同”，看 TFLOPs 会涨多少。"
+    },
+    {
+     "id": "7.2",
+     "title": "因果注意力：被剪的 token 留下了什么",
+     "desc": "信息只能向后、向上流。选剪枝位置并逐层播放，看被剪 token 的信息是否已流进问题。"
+    }
+   ],
+   "analogy": "{\"title\":\"同一箱油，早卸货还是晚卸货\",\"text\":\"油量固定：越晚卸下多余的货，前面烧掉的油越多，后面能带的货就越少。\",\"componentId\":\"analogy-scene\"}"
+  },
+  "chap-8": {
+   "title": "尺子不重要，规则才重要",
+   "deep": [
+    "【深入】随机为什么不差，它又说明了什么\n56 个随机 token 大致均匀分布，本身就有一定多样性。值得注意：Table 4 中随机留 56 个（MMB 52.66、POPE 72.78）远高于 Table 1 中 FastV（MMB 20.62、POPE 32.84）（Table 1）——后者是在第 3 层后几乎只留 1 个。这提示 FastV 的低分很大程度来自比较时的极端配置（本页推断，见第 10 章）。\n余弦、ℓ1、ℓ2 之间不到 0.4 分的差距来自单次运行，没有误差条，不宜据此排序。论文也没有报告“多样性程度”与“精度”的连续关系。"
+   ],
+   "modules": [
+    {
+     "id": "8.1",
+     "title": "同一张图，五种挑法",
+     "desc": "左边是示意图块场景，切换距离或规则看 56 个图块落在哪；右边是 Table 4 实测分数。"
+    }
+   ],
+   "analogy": "{\"title\":\"三把尺子量同一对\",\"text\":\"卷尺、刻度尺、量角器读数各不相同，却都指出同一对“最远的点”。\",\"componentId\":\"analogy-scene\"}"
+  },
+  "chap-9": {
+   "title": "理论算力 ≠ 实际速度",
+   "deep": [
+    "【深入】四种指标的含义，以及正文与表格对不上的地方\n· 2.05×：预填充 0.330 → 0.161 s\n· 1.29×：端到端 4.37 → 3.39 s\n· −0.55 GB：显存峰值 14.06 → 13.51 GB\n[表] [[\"理论 TFLOPs\",\"Eq. (5) 估算的 LLM 预填充计算量\",\"公式计算，与硬件无关\"],[\"预填充时间\",\"处理输入并产生第 1 个 token，近似首 token 延迟\",\"生成长度设为 1 后计时（该行在公开代码中被注释）[[ev:code-time]]\"],[\"端到端延迟\",\"单样本从输入到完整答案（batch = 1）\",\"CUDA Event 为 generate 计时 [[ev:code-time]]\"],[\"显存峰值\",\"max_memory_allocated，含模型权重\",\"每个样本后读取并重置\"]]\n· 正文称预填充“快约 55%” （§4.5），按表为 51.2%；原因未知。\n· 正文称显存“少约 400MB”，按表为 0.55 GB；原因未知。\n· 视频模型 FastV 的 14.20% 无法复现（保留 2 或 3 个分别为 14.15%、14.22%），原因未知。\n· 端到端延迟随答案长度变化，论文未报告各方法的输出长度；7B fp16 权重本身约 13–14 GB（本页估算），所以显存只省 0.55 GB 并不意外。"
+   ],
+   "modules": [
+    {
+     "id": "9.1",
+     "title": "TFLOPs 复算器",
+     "desc": "选论文配置或自定义，按 tflops.py 同口径复算并与表格比对；三个开关看口径差异。"
+    },
+    {
+     "id": "9.2",
+     "title": "四种指标赛跑",
+     "desc": "Table 2 实测数据。点“开跑”看端到端延迟，切换指标比较 TFLOPs、预填充与显存。"
+    }
+   ],
+   "analogy": "{\"title\":\"台秤与秒表\",\"text\":\"背包减重 86%，秤上读数骤降；跑完全程却只快了两成。\",\"componentId\":\"analogy-scene\"}"
+  },
+  "chap-10": {
+   "title": "结果很亮眼，先对口径再下结论",
+   "deep": [
+    "【深入】五个口径问题与对比条件核对\n· 0.06 → 0.96：COCO CIDEr：FastV vs DivPrune（Table 1）\n· ≈ 1 个：FastV 第 3 层后保留的 token（本页外推）\n· 单次：全部结果均为单次运行，无误差条或置信区间\n· 百分点与百分比混用：GQA“下降 5.1%”实为 5.11 个百分点（相对 8.2%）；“COCO 下降 12.7%”是相对降幅 （§4.3）。\n· 评测划分：脚本显示 MMBench 用英文 dev、MMMU 用验证集、OKVQA 用 val2014、COCO 用 2017 验证集 （run_Divprune.sh），均非隐藏测试集。\n· 指标聚合：Fig. 1 纵轴把 CIDEr（可超过 1）与三个 0–1 分数直接平均 （Fig. 1）。\n· 负面信号：TextVQA 从 46.08 降到 35.97，微调的 M³ 为 44.31 （supp Table 1）。\n[表] [[\"算力对齐\",\"基线取“不低于目标的最小可用比例” [[ev:s41]]\",\"对基线略有利（论文自述）\"],[\"FastV 配置\",\"K = 3，R = 0.001 [[ev:supp-s5]]；按“保留比例”解读才能复现 15.69%\",\"远离默认的“第 2 层后留一半” [[ev:ext-fastv]]\"],[\"VTW 配置\",\"关闭校准，7B 用 K = 4 [[ev:supp-s5]]\",\"第 K 层后视觉 token 全部撤走\"],[\"实现来源\",\"作者在同一 lmms-eval 环境自行运行 [[ev:s41]]\",\"未说明基线代码版本\"],[\"随机性\",\"单次运行，无误差条\",\"小差距无法判断是否超出评测波动\"]]"
+   ],
+   "modules": [
+    {
+     "id": "10.1",
+     "title": "结果浏览器：差距有多大，能说明什么",
+     "desc": "切换模型和数据集；差值可在百分点与相对百分比间切换。论文为单次运行，本页只报告表中差值，不画误差带。"
+    },
+    {
+     "id": "10.2",
+     "title": "公平性检查：FastV 输在哪里",
+     "desc": "把 FastV（第 3 层后约留 1 个）、随机（第 0 层留 56 个）和 DivPrune 放在一起比。"
+    }
+   ],
+   "analogy": "{\"title\":\"翻牌计分板\",\"text\":\"比分翻得很快——先看清比的是不是同一个项目、同样的规则。\",\"componentId\":\"analogy-scene\"}"
+  }
+ },
+ "evidence": {
+  "abs": {
+   "label": "Abstract",
+   "source": "main",
+   "loc": "正文第 1 页（会议页码 9392）· 摘要",
+   "content": "把剪枝表述为 MMDP；称 DivPrune “achieves the highest diversity”；在 16 个图像/视频数据集上达到 SOTA；降低端到端延迟与显存。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=1"
+  },
+  "s1": {
+   "label": "§1",
+   "source": "main",
+   "loc": "正文第 1–2 页 · §1 Introduction",
+   "content": "运行时间与显存随输入长度“二次增长”；注意力分数并非最优、且倾向保留彼此相似的 token；贡献：免训练、免校准、即插即用，16 个数据集，剪枝率 ≥ 80% 时增益明显。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=1"
+  },
+  "s23": {
+   "label": "§2.3",
+   "source": "main",
+   "loc": "正文第 2–3 页 · §2.3 Visual Token Pruning",
+   "content": "FastV、PruMerge 基于注意力；FitPrune、VTW 依赖校准集；M³ 与 [17] 需要训练。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=2"
+  },
+  "fig1": {
+   "label": "Fig. 1",
+   "source": "main",
+   "loc": "正文第 1 页 · Figure 1",
+   "content": "LLaVA 1.5-7B 上不同剪枝方法在各 TFLOP 比例下的平均性能；纵轴为 COCO(CIDEr)、OKVQA、POPE(F1)、MMBench 的平均，横轴为 TFLOP 比例。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=1"
+  },
+  "fig2": {
+   "label": "Fig. 2",
+   "source": "main",
+   "loc": "正文第 3 页 · Figure 2",
+   "content": "LMM 结构总览：文本编码器、视觉编码器 + 投影层，DivPrune 作用于投影后的视觉 token。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=3"
+  },
+  "eq1": {
+   "label": "Eq. (1)",
+   "source": "main",
+   "loc": "正文第 3 页 · §3.1",
+   "content": "P(y₁…y_N̂ | E_t, E_v) = ∏ P(y_i | y_<i, E_t, E_v)。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=3"
+  },
+  "eq2": {
+   "label": "Eq. (2)",
+   "source": "main",
+   "loc": "正文第 3 页 · §3.2",
+   "content": "Find f: E_v → Ẽ_v；Objective: min_f ℒ(𝒫, 𝒫̃)；Subject to |Ẽ_v| = M̃。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=3"
+  },
+  "eq3": {
+   "label": "Eq. (3)",
+   "source": "main",
+   "loc": "正文第 3 页 · §3.3",
+   "content": "Ẽ_v = arg max [min_{γ,ω∈S} d(γ, ω) : ∀S ⊂ E_v]，S 含 M̃ 个元素（式下文字说明）。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=3"
+  },
+  "eq4": {
+   "label": "Eq. (4)",
+   "source": "main",
+   "loc": "正文第 3 页 · §3.3",
+   "content": "d(γ, ω) = 1 − γ·ω / (‖γ‖‖ω‖)。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=3"
+  },
+  "s33": {
+   "label": "§3.3",
+   "source": "main",
+   "loc": "正文第 3–4 页 · §3.3 DivPrune: Method Overview",
+   "content": "因 token 数有限、求解器不适合 GPU，称“obtain exact solution”；选择开销相对 LLM 计算可忽略；距离矩阵由一次矩阵乘法得到；也可用于中间层隐藏状态。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=4"
+  },
+  "alg1": {
+   "label": "Algorithm 1",
+   "source": "main",
+   "loc": "正文第 4 页 · Algorithm 1（第 1–22 行）",
+   "content": "第一阶段（第 3–11 行）按 i ≠ j 的最近邻距离取 argmax；第二阶段（第 12–21 行）按到已选集合的最近距离取 argmax，直到 |Ẽ_v| = M̃。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=4"
+  },
+  "s41": {
+   "label": "§4.1",
+   "source": "main",
+   "loc": "正文第 4–5 页 · §4.1 Experimental Settings",
+   "content": "基线 FastV/PruMerge/VTW/FitPrune/M³；模型 LLaVA 1.5-7B/13B、1.6-7B、NeXT-Video-7B；LLaVA 1.5 为 576 个视觉 token，1.6 为 3–5 倍，视频每帧 144、8 帧共 1152；8×V100 32GB；lmms-eval；batch size 1；基线取“不低于目标的最小可用 TFLOP 比例”。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=4"
+  },
+  "eq5": {
+   "label": "Eq. (5)",
+   "source": "main",
+   "loc": "正文第 5 页 · §4.1",
+   "content": "TFLOP 比例 = [K×(4μd² − 2μ²d + 2μdm) + (T−K)×(4μ̃d² − 2μ̃²d + 2μ̃dm)] / [T×(4μd² − 2μ²d + 2μdm)]（按印刷；二次项符号与代码不一致）。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=5"
+  },
+  "s42": {
+   "label": "§4.2",
+   "source": "main",
+   "loc": "正文第 5 页 · §4.2 Insights",
+   "content": "LLaVA 1.5 的视觉 token 为 4096 维；t-SNE 可视化，保留 10%；在 1000 个 SeedBench 随机样本上统计 Max-Min 距离直方图。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=5"
+  },
+  "fig3a": {
+   "label": "Fig. 3(a)",
+   "source": "main",
+   "loc": "正文第 5 页 · Figure 3(a)",
+   "content": "单个样本的 t-SNE：DivPrune 的选择覆盖所有簇；FastV 未选上方簇，且选中点扎堆。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=5"
+  },
+  "fig3b": {
+   "label": "Fig. 3(b)",
+   "source": "main",
+   "loc": "正文第 5 页 · Figure 3(b)",
+   "content": "SeedBench 1000 个样本上已选 token 的 Max-Min 距离直方图：DivPrune 整体高于 FastV。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=5"
+  },
+  "tab1": {
+   "label": "Table 1",
+   "source": "main",
+   "loc": "正文第 6 页 · Table 1",
+   "content": "LLaVA 1.5-7B / 1.5-13B / 1.6-7B 在 11 个图像数据集上的结果与 TFLOPs（ratio %）。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=6"
+  },
+  "s43": {
+   "label": "§4.3",
+   "source": "main",
+   "loc": "正文第 6–7 页 · §4.3 Image-Language Understanding",
+   "content": "GQA/MMB 下降 5.1%/4.9%，VTW/FastV 至少下降 23.0%/42.8%；COCO CIDEr 下降约 95% vs 12.7%；POPE 略升；Ours* 对齐 PruMerge 的比例；13B 与 1.6 的对比；Fig. 1 讨论。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=6"
+  },
+  "tab2": {
+   "label": "Table 2",
+   "source": "main",
+   "loc": "正文第 7 页 · Table 2",
+   "content": "LLaVA-NeXT-Video-7B：5 个视频数据集的分数，以及显存峰值、预填充时间、端到端延迟。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=7"
+  },
+  "s44": {
+   "label": "§4.4",
+   "source": "main",
+   "loc": "正文第 7–8 页 · §4.4 Video-Language Understanding",
+   "content": "与图像实验相同的剪枝比例；基线取不低于 DivPrune TFLOPs 的最小可用配置。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=7"
+  },
+  "s45": {
+   "label": "§4.5",
+   "source": "main",
+   "loc": "正文第 8 页 · §4.5 Efficiency Analysis",
+   "content": "VideoChatGPT 499 个样本；显存约少 400MB；预填充与端到端约快 55% 与 22%；预填充比基线长 6–7%，端到端短 1–7%；原因归于距离计算与基线逐步剪枝。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=8"
+  },
+  "tab3": {
+   "label": "Table 3",
+   "source": "main",
+   "loc": "正文第 8 页 · Table 3",
+   "content": "在 Layer 0/1/2/3 剪枝：TFLOP 19.61/19.65/19.70/19.80%；平均 62.34/60.44/56.99/38.60。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=8"
+  },
+  "tab4": {
+   "label": "Table 4",
+   "source": "main",
+   "loc": "正文第 8 页 · Table 4",
+   "content": "余弦/ℓ1/ℓ2/随机/Min-Max：平均 62.34/61.94/62.22/56.66/46.53（TFLOP 19.61%）。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=8"
+  },
+  "s46": {
+   "label": "§4.6",
+   "source": "main",
+   "loc": "正文第 8 页 · §4.6 Ablation Study",
+   "content": "默认在 Layer 0 剪枝；称该消融“using 5 datasets”；距离度量影响不大；随机低约 5.6%，Min-Max 低约 15.8%。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Alvar_DivPrune_Diversity-based_Visual_Token_Pruning_for_Large_Multimodal_Models_CVPR_2025_paper.pdf#page=8"
+  },
+  "supp-tab1": {
+   "label": "supp Table 1",
+   "source": "supp",
+   "loc": "补充材料第 1 页 · Table 1",
+   "content": "LLaVA 1.5-7B 在 TextVQA、VizWiz、VQAv2 上的结果（EM）。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/supplemental/Alvar_DivPrune_Diversity-based_Visual_CVPR_2025_supplemental.pdf#page=1"
+  },
+  "supp-tab2": {
+   "label": "supp Table 2",
+   "source": "supp",
+   "loc": "补充材料第 2 页 · Table 2",
+   "content": "各数据集的任务、指标与提示词（lmms-eval 默认提示）。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/supplemental/Alvar_DivPrune_Diversity-based_Visual_CVPR_2025_supplemental.pdf#page=2"
+  },
+  "supp-fig1": {
+   "label": "supp Fig. 1",
+   "source": "supp",
+   "loc": "补充材料第 3 页 · Figure 1",
+   "content": "SeedBench 2 例、GQA 3 例的 t-SNE，以及 GQA 上的 Max-Min 距离直方图。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/supplemental/Alvar_DivPrune_Diversity-based_Visual_CVPR_2025_supplemental.pdf#page=3"
+  },
+  "supp-fig2": {
+   "label": "supp Fig. 2",
+   "source": "supp",
+   "loc": "补充材料第 4 页 · Figure 2",
+   "content": "LLaVA 1.5-13B 在不同 TFLOP 比例下的平均性能。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/supplemental/Alvar_DivPrune_Diversity-based_Visual_CVPR_2025_supplemental.pdf#page=4"
+  },
+  "supp-s5": {
+   "label": "supp §5",
+   "source": "supp",
+   "loc": "补充材料第 4 页 · §5 Hyper-Parameters of Baselines",
+   "content": "DivPrune 剪枝率 91.2%；FastV（7B）K = 3、R = 0.001，（13B）K = 3、R = 0.023；VTW 在 LLaVA 1.5 用 K = 4、1.6 用 K = 3；M³ S = 56；FitPrune 剪枝率 90%。",
+   "url": "https://openaccess.thecvf.com/content/CVPR2025/supplemental/Alvar_DivPrune_Diversity-based_Visual_CVPR_2025_supplemental.pdf#page=4"
+  },
+  "code-readme": {
+   "label": "README",
+   "source": "code",
+   "loc": "README.md",
+   "content": "默认保留比例 0.098；tflops.py 复现论文 TFLOPs；eval_time.sh 用 LLaVA-1.6 测显存与延迟；代码基于 lmms-eval、LLaVA、FastV。",
+   "url": "https://github.com/vbdi/divprune/blob/799e2d950aa01ba7860907f5a6d86061f885dca6/README.md"
+  },
+  "code-arch": {
+   "label": "llava_arch.py L146–171",
+   "source": "code",
+   "loc": "LLaVA/llava/model/llava_arch.py 第 146–171 行",
+   "content": "`pairwise_cosine_similarity` 归一化后一次矩阵乘法；`DivPrune` 中 threshold_terms = int(round(ratio × len))；第一轮取每列第二小距离（排除自身），之后取到已选行的最小值，再 argmax。",
+   "url": "https://github.com/vbdi/divprune/blob/799e2d950aa01ba7860907f5a6d86061f885dca6/LLaVA/llava/model/llava_arch.py#L146-L171"
+  },
+  "code-apply": {
+   "label": "llava_arch.py L352–385",
+   "source": "code",
+   "loc": "LLaVA/llava/model/llava_arch.py 第 352–385 行",
+   "content": "LAYER_INDEX == 0 时：SYS_TOKEN_LEN = 35；取 new_input_embeds[0] 的视觉段；选择结果加 35 后与前缀、后续文本拼成 keep_indexs 并 sort()；再索引 embeds、position_ids（非空时）与 attention_mask。",
+   "url": "https://github.com/vbdi/divprune/blob/799e2d950aa01ba7860907f5a6d86061f885dca6/LLaVA/llava/model/llava_arch.py#L352-L385"
+  },
+  "code-encode": {
+   "label": "llava_arch.py L141–144",
+   "source": "code",
+   "loc": "LLaVA/llava/model/llava_arch.py 第 141–144 行",
+   "content": "encode_images：视觉塔输出经 mm_projector 投影，得到送入 LLM 的视觉 token。",
+   "url": "https://github.com/vbdi/divprune/blob/799e2d950aa01ba7860907f5a6d86061f885dca6/LLaVA/llava/model/llava_arch.py#L141-L144"
+  },
+  "code-skip": {
+   "label": "llava_arch.py L178",
+   "source": "code",
+   "loc": "LLaVA/llava/model/llava_arch.py 第 178 行",
+   "content": "当 input_ids.shape[1] == 1（解码阶段）时直接返回：剪枝只在预填充时做一次，KV cache 中只存剪枝后的序列。",
+   "url": "https://github.com/vbdi/divprune/blob/799e2d950aa01ba7860907f5a6d86061f885dca6/LLaVA/llava/model/llava_arch.py#L178"
+  },
+  "code-flop": {
+   "label": "tflops.py L1–22",
+   "source": "code",
+   "loc": "tflops.py 第 1–22 行",
+   "content": "find_flop = T × (4nd² + 2n²d + 2ndm)；剪掉 int(round((1−r)·v)) 个视觉 token；前 layer 层按全长、其余按剪枝后长度计算。",
+   "url": "https://github.com/vbdi/divprune/blob/799e2d950aa01ba7860907f5a6d86061f885dca6/tflops.py#L1-L22"
+  },
+  "code-ntok": {
+   "label": "tflops.py L40–49",
+   "source": "code",
+   "loc": "tflops.py 第 40–49 行",
+   "content": "11 个图像数据集的平均文本 token 数 [15,15,23,83,25,113,15,39,21,91,57]；LLaVA 1.6 各数据集视觉 token 数 [2225,…,2116]；视频 5 个数据集文本 token 数 [28,63,21,38,196]，视觉 8×144。",
+   "url": "https://github.com/vbdi/divprune/blob/799e2d950aa01ba7860907f5a6d86061f885dca6/tflops.py#L40-L49"
+  },
+  "code-r": {
+   "label": "tflops.py L64–71",
+   "source": "code",
+   "loc": "tflops.py 第 64–71 行",
+   "content": "DivPrune：k = 0；图像 r = 0.098，视频 r = 0.1。",
+   "url": "https://github.com/vbdi/divprune/blob/799e2d950aa01ba7860907f5a6d86061f885dca6/tflops.py#L64-L71"
+  },
+  "code-run": {
+   "label": "run_Divprune.sh",
+   "source": "code",
+   "loc": "run_Divprune.sh 第 5–20 行",
+   "content": "任务：coco2017_cap_val, flickr30k_test, gqa, mmbench_en_dev, mme, mmmu_val, nocaps_val, ok_vqa_val2014, pope, scienceqa_img, seedbench；LAYER_INDEX=0，SUBSET_RATIO=0.098；batch_size 1；RUN_NAME 为 llava_1.5_7b，但 pretrained 为 llava-v1.5-13b。",
+   "url": "https://github.com/vbdi/divprune/blob/799e2d950aa01ba7860907f5a6d86061f885dca6/run_Divprune.sh#L5-L20"
+  },
+  "code-time": {
+   "label": "eval_time.sh / llava.py L424–449",
+   "source": "code",
+   "loc": "eval_time.sh 第 1–37 行；lmms_eval/models/llava.py 第 424–449 行",
+   "content": "eval_time.sh 用 llava-v1.6-vicuna-7b 与 coco2017_cap_val；用 CUDA Event 为 generate 计时；“max_new_tokens = 1 用于预填充计时”一行被注释。",
+   "url": "https://github.com/vbdi/divprune/blob/799e2d950aa01ba7860907f5a6d86061f885dca6/lmms_eval/models/llava.py#L424-L449"
+  },
+  "ext-fastv": {
+   "label": "FastV 原论文",
+   "source": "ext",
+   "loc": "arXiv 2403.06764（ECCV 2024）· 标题",
+   "content": "An Image is Worth 1/2 Tokens After Layer 2：标题即其默认设定——第 2 层之后剪掉一半视觉 token。",
+   "url": "https://arxiv.org/abs/2403.06764"
+  }
+ }
+}

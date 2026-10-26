@@ -1,0 +1,55 @@
+{
+  "kind": "chapter",
+  "id": "chap-6",
+  "title": "05 · Algorithm 1",
+  "modules": [
+    {
+      "kind": "module",
+      "id": "5.1",
+      "title": "照着伪代码跑一遍 Algorithm 1",
+      "desc": "每按一次“下一步”，画布、数组 D、伪代码行与反馈一起更新；也可以先猜下一点再揭晓。",
+      "componentId": "dp-stepper"
+    },
+    {
+      "kind": "module",
+      "id": "5.2",
+      "title": "贪心 vs 穷举",
+      "desc": "12 个点选 4 个，同时跑 Algorithm 1 和穷举；找一个反例，或批量统计 200 组。",
+      "componentId": "dp-m5-exact"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "ch05-intro",
+      "title": "每一针都落在最大的空白处",
+      "goal": "先直观看贪心怎样逐个落点，再进入伪代码逐步演示。",
+      "summary": "第一针选最孤立的点，之后每针落在离已有针最远处",
+      "interaction": "点“落下一针”，看空白半径逐针变小",
+      "next": "照着伪代码跑一遍",
+      "notes": "统一类比：野外测绘队在一张地图上布设观测点——地图格 = 视觉 token，插旗 = 保留 token，营地 = 解码层，补给 = TFLOP 预算。\n\n本页情节：每一针都落在最大的空白处。类比边界：二维欧氏示意；真实算法在 4096 维特征空间量余弦距离。\n\n右侧“精读”“要点与误区”两层分别对应原版的洞察 / 关键数字与要点 / 误区。\n\n【深入】开销有多大，“最高多样性”该怎么理解\n· 56：LLaVA 1.5 的选择轮数（= M̃）\n· ≈ 0.04%：距离矩阵占一次 prefill 计算量（本页外推）\n· +11 ms：预填充比 FastV / VTW 慢（Table 2）\n距离矩阵约 576² × 4096 ≈ 1.4 × 10⁹ 次乘加，只占 Eq. (5) 口径下一次预填充（3.228 TFLOPs）的 0.04%–0.08% 〔公式外推〕。但贪心循环逐轮串行，Table 2 中 DivPrune 的预填充比基线多约 11 ms（0.161 vs 0.150 s），论文归因于距离计算 （§4.5）。\n摘要说 DivPrune “达到最高多样性” （Abstract），应理解为“在所比较方法中最高”。第一阶段确定性地选最孤立的 token，结果可复现，但最孤立的也可能是噪声图块，论文未讨论（本页分析）。",
+      "componentId": "dp-intro-05"
+    },
+    {
+      "id": "alg1-stepper",
+      "title": "5.1 · Algorithm 1 的两阶段贪心选择",
+      "goal": "逐步计算数组 D，看每轮的 argmax 选中谁；也可以先猜再揭晓。",
+      "summary": "第一阶段选最孤立的点，第二阶段反复选离已选集合最远的点",
+      "interaction": "切换点集与演示方式，按下一步 / 自动播放；挑战模式下在画布上点出预测的点（或用列表选择编号）",
+      "notes": "Algorithm 1（论文原文，第 1–22 行）：\n1 M̃: subset size; Ev: visual tokens; Ẽv: selected subset\n2 Initialize Ẽv=[] and R = Ev\n3 // First stage: add the first token\n4 D = [] initialize the distance array\n5 for i in R do\n6   dmin = +inf\n7   for j in R do\n8     If (i ≠ j & d(i, j) ≤ dmin) then dmin = d(i, j)\n9   Add dmin to D\n10 k = R[arg max (D)]\n11 move k from R to Ẽv\n12 // Second stage: iteratively add the subsequent tokens\n13 while |Ẽv| < M̃ do\n14   D = [] initialize the distance array\n15   for i in R do\n16     dmin = +inf\n17     for j in Ẽv do\n18       If d(i, j) ≤ dmin then dmin = d(i, j)\n19     Add dmin to D\n20   k = R[arg max (D)]\n21   move k from R to Ẽv\n22 Return Ẽv\n页面只显示当前步骤最关键的几行（含原始行号），完整伪代码见上。\n教学示意：24 个二维点、欧氏距离，代替真实的 4096 维投影特征与余弦距离；选择逻辑与 Algorithm 1 一致（并列时取编号最小者）。数组 D 的柱高按本轮最大值缩放，不同轮请比较柱顶数值。\n两阶段 D 的定义不同：第一阶段是“到其他候选的最近距离”，第二阶段是“到已选集合的最近距离”；只有第二阶段每轮被选点的 D 不增（可能相等）。\n实现差异：伪代码把选中的 k 移出 R；官方代码没有移出，每轮对全部候选计算到已选集合的最小距离，靠“到自身距离为 0”避免重复（https://github.com/vbdi/divprune/blob/799e2d950aa01ba7860907f5a6d86061f885dca6/LLaVA/llava/model/llava_arch.py#L161-L170 ）。\n开销：全部两两距离用一次矩阵乘法算好；距离矩阵约 576² × 4096 ≈ 1.4 × 10⁹ 次乘加，只占一次预填充的 0.04%–0.08%（本页外推），但 Table 2 中 DivPrune 的预填充比 FastV / VTW 多约 11 ms。\n颜色：蓝 = 当前计算（最近者连线、D 柱）；绿 = 被选中（argmax 柱、Ẽv 中的点）；橙 = 你的预测；红 = 预测错误。",
+      "componentId": "dp-stepper",
+      "moduleId": "5.1",
+      "next": "贪心一定是最优吗"
+    },
+    {
+      "id": "ch05-exact",
+      "title": "5.2 · 贪心 vs 穷举",
+      "goal": "同时跑 Algorithm 1 与穷举，看贪心是否总能达到最优。",
+      "summary": "200 组 12 选 4 的随机点里，贪心并非总是最优",
+      "interaction": "换一组点、找一个反例；下方直方图为 200 组的统计",
+      "next": "论文伪代码和官方代码一致吗",
+      "notes": "本页外推：比例只针对“12 个二维均匀随机点选 4 个”的玩具问题，不能直接推广到 576 个 4096 维 token；它只说明贪心不保证最优。\n论文 §3.3 称“求得了精确解”，但 Algorithm 1 是贪心，没有回溯，也没有给出最优性证明。\n颜色：绿 = 贪心选中、蓝虚线 = 穷举最优、黄 = 贪心不是最优。",
+      "componentId": "dp-m5-exact",
+      "moduleId": "5.2"
+    }
+  ]
+}

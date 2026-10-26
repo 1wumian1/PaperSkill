@@ -1,0 +1,178 @@
+{
+  "chapters": [
+    "chap-1.json",
+    "chap-2.json",
+    "chap-3.json",
+    "chap-4.json",
+    "chap-5.json",
+    "chap-6.json",
+    "chap-7.json",
+    "chap-8.json",
+    "chap-9.json",
+    "chap-10.json",
+    "chap-11.json",
+    "chap-12.json"
+  ],
+  "widgets": [
+    {
+      "componentId": "dp-cover",
+      "exportName": "DpCover",
+      "file": "dp-cover.tsx"
+    },
+    {
+      "componentId": "dp-guide",
+      "exportName": "DpGuide",
+      "file": "dp-guide.tsx"
+    },
+    {
+      "componentId": "dp-stepper",
+      "exportName": "DpStepper",
+      "file": "dp-stepper.tsx"
+    },
+    {
+      "componentId": "dp-calc",
+      "exportName": "DpCalc",
+      "file": "dp-calc.tsx"
+    },
+    {
+      "componentId": "dp-intro-01",
+      "exportName": "DpIntro01",
+      "file": "dp-intro-01.tsx"
+    },
+    {
+      "componentId": "dp-m1-pipeline",
+      "exportName": "DpM1Pipeline",
+      "file": "dp-m1-pipeline.tsx"
+    },
+    {
+      "componentId": "dp-m1-ledger",
+      "exportName": "DpM1Ledger",
+      "file": "dp-m1-ledger.tsx"
+    },
+    {
+      "componentId": "dp-intro-02",
+      "exportName": "DpIntro02",
+      "file": "dp-intro-02.tsx"
+    },
+    {
+      "componentId": "dp-m2-compare",
+      "exportName": "DpM2Compare",
+      "file": "dp-m2-compare.tsx"
+    },
+    {
+      "componentId": "dp-intro-03",
+      "exportName": "DpIntro03",
+      "file": "dp-intro-03.tsx"
+    },
+    {
+      "componentId": "dp-m3-explosion",
+      "exportName": "DpM3Explosion",
+      "file": "dp-m3-explosion.tsx"
+    },
+    {
+      "componentId": "dp-intro-04",
+      "exportName": "DpIntro04",
+      "file": "dp-intro-04.tsx"
+    },
+    {
+      "componentId": "dp-m4-cosine",
+      "exportName": "DpM4Cosine",
+      "file": "dp-m4-cosine.tsx"
+    },
+    {
+      "componentId": "dp-m4-bottleneck",
+      "exportName": "DpM4Bottleneck",
+      "file": "dp-m4-bottleneck.tsx"
+    },
+    {
+      "componentId": "dp-intro-05",
+      "exportName": "DpIntro05",
+      "file": "dp-intro-05.tsx"
+    },
+    {
+      "componentId": "dp-m5-exact",
+      "exportName": "DpM5Exact",
+      "file": "dp-m5-exact.tsx"
+    },
+    {
+      "componentId": "dp-intro-06",
+      "exportName": "DpIntro06",
+      "file": "dp-intro-06.tsx"
+    },
+    {
+      "componentId": "dp-m6-codemap",
+      "exportName": "DpM6Codemap",
+      "file": "dp-m6-codemap.tsx"
+    },
+    {
+      "componentId": "dp-m6-keep",
+      "exportName": "DpM6Keep",
+      "file": "dp-m6-keep.tsx"
+    },
+    {
+      "componentId": "dp-intro-07",
+      "exportName": "DpIntro07",
+      "file": "dp-intro-07.tsx"
+    },
+    {
+      "componentId": "dp-m7-budget",
+      "exportName": "DpM7Budget",
+      "file": "dp-m7-budget.tsx"
+    },
+    {
+      "componentId": "dp-m7-causal",
+      "exportName": "DpM7Causal",
+      "file": "dp-m7-causal.tsx"
+    },
+    {
+      "componentId": "dp-intro-08",
+      "exportName": "DpIntro08",
+      "file": "dp-intro-08.tsx"
+    },
+    {
+      "componentId": "dp-m8-strategies",
+      "exportName": "DpM8Strategies",
+      "file": "dp-m8-strategies.tsx"
+    },
+    {
+      "componentId": "dp-intro-09",
+      "exportName": "DpIntro09",
+      "file": "dp-intro-09.tsx"
+    },
+    {
+      "componentId": "dp-m9-race",
+      "exportName": "DpM9Race",
+      "file": "dp-m9-race.tsx"
+    },
+    {
+      "componentId": "dp-intro-10",
+      "exportName": "DpIntro10",
+      "file": "dp-intro-10.tsx"
+    },
+    {
+      "componentId": "dp-m10-results",
+      "exportName": "DpM10Results",
+      "file": "dp-m10-results.tsx"
+    },
+    {
+      "componentId": "dp-m10-fairness",
+      "exportName": "DpM10Fairness",
+      "file": "dp-m10-fairness.tsx"
+    },
+    {
+      "componentId": "dp-end-verdict",
+      "exportName": "DpEndVerdict",
+      "file": "dp-end-verdict.tsx"
+    },
+    {
+      "componentId": "dp-end-glossary",
+      "exportName": "DpEndGlossary",
+      "file": "dp-end-glossary.tsx"
+    },
+    {
+      "componentId": "dp-end-sources",
+      "exportName": "DpEndSources",
+      "file": "dp-end-sources.tsx"
+    }
+  ]
+}

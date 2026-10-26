@@ -1,0 +1,37 @@
+{
+  "conditions": "同一台机器、同一浏览器窗格；生产构建；measure.html?all=1（全部章节展开）；1440×900；减少动态效果关闭；虚拟帧时钟（后台窗格里真实 rAF 不触发），每帧 1000/60 ms",
+  "before_v9_0": {
+    "S1_cover_idle": { "loopsPerFrame": 22, "onscreenDrawsPerFrame": 1.6, "offscreenDrawsPerFrame": 21, "msAvg": 55.15, "msP95": 132.4 },
+    "S2_at_5_1_idle": { "loopsPerFrame": 22, "onscreenDrawsPerFrame": 2, "offscreenDrawsPerFrame": 21, "msAvg": 57.94, "msP95": 128.8 },
+    "S3_slider_settle_frames": 85,
+    "S4_click_settle_frames": 51,
+    "S5_rapid_clicks_settle_frames": 58,
+    "S6_race": { "loopsPerFrame": 23, "offscreenDrawsPerFrame": 22.99, "msAvg": 51.9, "styleMutations": 1592 },
+    "S7_at_9_2_idle": { "loopsPerFrame": 23, "offscreenDrawsPerFrame": 21.85, "msAvg": 50.65 },
+    "S8_offscreen_mid_animation": { "loopsPerFrame": 23, "offscreenDrawsPerFrame": 21.03, "msAvg": 49.7 },
+    "S8_back_is_final": true,
+    "S9_cover_after_7s": { "loopsPerFrame": 23, "onscreenDrawsPerFrame": 1.97, "offscreenDrawsPerFrame": 21, "msAvg": 54.01 },
+    "pendingLoops": 23
+  },
+  "after_v9_1": {
+    "S1_cover_idle": { "loopsPerFrame": 1, "onscreenDrawsPerFrame": 2, "offscreenDrawsPerFrame": 0, "msAvg": 3.38, "msP95": 7.5 },
+    "S2_at_5_1_idle": { "loopsPerFrame": 0, "onscreenDrawsPerFrame": 0, "offscreenDrawsPerFrame": 0, "msAvg": 0.02, "msP95": 0.1 },
+    "S3_slider_settle_frames": 1,
+    "S4_click_settle_frames": 55,
+    "S5_rapid_clicks_settle_frames": 55,
+    "S6_race": { "loopsPerFrame": 0, "offscreenDrawsPerFrame": 0, "msAvg": 0.02, "styleMutations": 0 },
+    "S7_at_9_2_idle": { "loopsPerFrame": 0, "offscreenDrawsPerFrame": 0, "msAvg": 0.02 },
+    "S8_offscreen_mid_animation": { "loopsPerFrame": 0, "offscreenDrawsPerFrame": 0, "msAvg": 0.03 },
+    "S8_back_is_final": true,
+    "S9_cover_after_7s": { "loopsPerFrame": 0, "onscreenDrawsPerFrame": 0, "offscreenDrawsPerFrame": 0, "msAvg": 0.02 },
+    "pendingLoops": 0
+  },
+  "behaviour_checks_after": {
+    "cover_before_first_frame": "重要性 Top-k：已选 16 个，覆盖 1 / 5 个簇（直接显示结果）",
+    "rapid_reverse_clicks_5_1": "下一步×3、上一步×1、下一步×1、上一步×2（每次之间 1 帧）→ 第 2 步；画布 aria、步数、标题、伪代码行（5,7,8,9）一致",
+    "autoplay_fast_in_view_2_5s": "第 3 步",
+    "autoplay_offscreen_3s": "仍为第 3 步（暂停）",
+    "autoplay_back_1_2s": "第 4 步（从暂停处继续）",
+    "autoplay_slow_2_5s": "第 1 步（每步 2.8 s，尚未前进）"
+  }
+}
