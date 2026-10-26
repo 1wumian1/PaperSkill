@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "paperName": "evipathbench_benchmarking_evidence_acquisition_and_reasoning_in_vision_language_models_for_whole_slide_pathology",
+  "title": "EviPathBench: Benchmarking Evidence Acquisition and Reasoning in Vision-Language Models for Whole-Slide Pathology",
+  "authors": [],
+  "year": 2026,
+  "venue": "arXiv:2607.19261v4 [cs.CV]",
+  "paperUrl": "https://arxiv.org/abs/2607.19261",
+  "participants": [
+    {
+      "name": "刘轩麟",
+      "github": "30SC35KD"
+    }
+  ],
+  "topics": [
+    "计算病理",
+    "全切片图像",
+    "视觉语言模型",
+    "多尺度推理",
+    "基准评测"
+  ],
+  "skillVersion": "1.4.0",
+  "status": "review",
+  "entry": "index.html",
+  "version": "xuanlin1026",
+  "versionDate": "2026-10-26"
+}
