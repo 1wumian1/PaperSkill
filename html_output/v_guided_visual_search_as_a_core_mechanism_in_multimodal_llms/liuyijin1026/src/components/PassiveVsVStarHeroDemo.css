@@ -1,0 +1,45 @@
+/* Landing-only copy of InSpatio Hero's hero-compare / bg-side shell.
+   Geometry is retained; its legacy color aliases map to existing PaperSkill tokens. */
+.vhero-demo { position: relative; margin-top: 40px; text-align: left; }
+.vhero-demo .vhero-compare { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+.vhero-demo .vhero-card { min-width: 0; overflow: hidden; background: var(--ui-bg-card); border: 1px solid var(--ui-border); border-radius: var(--ui-radius-md); box-shadow: var(--ui-shadow-soft); }
+.vhero-demo .vhero-old { border-top: 3px solid var(--ui-text-light); }
+.vhero-demo .vhero-new { border-top: 3px solid var(--ui-accent); }
+.vhero-demo .vhero-head { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--ui-bg-muted); border-bottom: 1px solid var(--ui-border); font-size: 15px; font-weight: 800; line-height: 1.7; color: var(--ui-accent); }
+.vhero-demo .vhero-old .vhero-head { color: var(--ui-text-light); }
+.vhero-demo .vhero-canvas { position: relative; width: 100%; height: 150px; overflow: hidden; background: var(--ui-bg-card); }
+.vhero-demo .vhero-subtitle { position: absolute; top: 7px; left: 12px; right: 12px; color: var(--ui-text-muted); font-size: 11px; line-height: 17px; }
+.vhero-demo .vhero-scene { position: absolute; top: 27px; left: 12px; width: calc(100% - 24px); height: 87px; overflow: hidden; border-radius: 4px; }
+.vhero-demo .vhero-image { transform-origin: 450px 200px; transition: transform 1.3s ease-in-out, filter 1.3s ease-in-out; }
+.vhero-demo .is-compressed .vhero-image { transform: scale(.43); filter: blur(1.2px); }
+.vhero-demo .is-zoomed .vhero-image { transform: scale(8) translate(-81.5px, -18px); }
+.vhero-demo .vhero-cue { position: absolute; top: 28px; left: 14px; color: var(--ui-orange-ink); background: var(--ui-bg-card); border-radius: 3px; font: 600 10px/16px var(--ui-font-mono); padding: 0 4px; }
+.vhero-demo .vhero-status { position: absolute; bottom: 1px; left: 8px; right: 8px; height: 34px; text-align: center; color: var(--ui-text-muted); }
+.vhero-demo .vhero-status strong { display: block; font-size: 12px; line-height: 19px; font-weight: 600; }
+.vhero-demo .vhero-status span { display: block; font-size: 10px; line-height: 14px; }
+.vhero-demo .vhero-status.is-found { color: var(--ui-success-ink); }
+.vhero-demo .vhero-canvas { opacity: 1; transition: opacity 180ms ease; }
+.vhero-demo .is-resetting .vhero-canvas { opacity: 0; }
+.vhero-demo .is-resetting .vhero-image { transition: none; }
+.vhero-demo .vhero-wall { fill: var(--ui-bg-muted); }
+.vhero-demo .vhero-floor, .vhero-demo .vhero-furniture { fill: var(--ui-border); }
+.vhero-demo .vhero-window { fill: var(--ui-bg-soft); stroke: var(--ui-border-strong); stroke-width: 4; }
+.vhero-demo .vhero-frame, .vhero-demo .vhero-plate, .vhero-demo .vhero-napkin { fill: var(--ui-bg-card); stroke: var(--ui-border-strong); stroke-width: 2; }
+.vhero-demo .vhero-line { fill: none; stroke: var(--ui-border-strong); stroke-width: 2; }
+.vhero-demo .vhero-table { fill: var(--ui-bg-soft); stroke: var(--ui-border-strong); stroke-width: 3; }
+.vhero-demo .vhero-table-leg, .vhero-demo .vhero-table-edge { fill: var(--ui-border-strong); }
+.vhero-demo .vhero-vase, .vhero-demo .vhero-bowl { fill: var(--ui-text-muted); }
+.vhero-demo .vhero-cup-shadow { fill: var(--ui-border); }
+.vhero-demo .vhero-glass-wall { fill: var(--ui-bg-card); stroke: var(--ui-accent); stroke-width: 1; }
+.vhero-demo .vhero-liquid { fill: var(--ui-success); }
+.vhero-demo .vhero-glass-rim { fill: var(--ui-bg-card); stroke: var(--ui-accent); stroke-width: 1; }
+.vhero-demo .vhero-glass-shine { fill: none; stroke: var(--ui-bg-card); stroke-width: 1; opacity: .8; }
+.vhero-demo .vhero-hint { fill: none; stroke: var(--ui-accent-alt); stroke-width: 2; }
+.vhero-demo .vhero-focus { fill: none; stroke: var(--ui-accent-alt); stroke-width: 2; vector-effect: non-scaling-stroke; transform: translate(18px, 16px) scale(.96, .92); transition: transform 1.2s ease-in-out, opacity 220ms ease; }
+.vhero-demo .vhero-focus.at-table { transform: translate(160px, 175px) scale(.6, .32); }
+.vhero-demo .vhero-focus.at-glass { transform: translate(508px, 190px) scale(.053, .13); }
+@media (max-width: 768px) { .vhero-demo .vhero-compare { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) {
+  .vhero-demo .vhero-image, .vhero-demo .vhero-focus { transition: none; }
+  .vhero-demo .vhero-canvas { transition: opacity 120ms linear; }
+}

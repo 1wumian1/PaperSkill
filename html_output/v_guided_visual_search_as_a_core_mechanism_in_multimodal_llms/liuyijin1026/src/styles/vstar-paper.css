@@ -1,0 +1,18 @@
+/* V* content layout within the Inspatio-derived PaperSkill shell. */
+.hero-summary{max-width:650px;margin-top:28px}
+.takeaway{margin:24px 0 0;padding:14px 18px;border-left:4px solid var(--ui-accent);background:var(--ui-bg-soft);font-size:16px}
+.takeaway strong{display:block;margin-bottom:5px;color:var(--ui-accent);font-size:14px}
+.hero-actions .button-primary{border-radius:var(--ui-radius-pill);padding:13px 30px}
+.final{margin-top:32px;padding:40px 32px;border:1px solid var(--ui-border);border-radius:var(--ui-radius-lg);background:var(--ui-bg-card);box-shadow:var(--ui-shadow-soft);scroll-margin-top:20px}
+.final h2{margin:8px 0 22px;font-size:30px}
+.takeaways{list-style:none;padding:0;counter-reset:insight;margin-bottom:30px}
+.takeaways li{counter-increment:insight;display:flex;gap:16px;align-items:baseline;padding:13px 0;border-bottom:1px solid var(--ui-border);font-size:17px}
+.takeaways li::before{content:'0' counter(insight);color:var(--ui-accent);font:700 18px var(--ui-font-mono)}
+.final h3{font-size:18px}
+.limits{padding-left:22px;font-size:15px;color:var(--ui-text-muted)}
+.limits li{margin:12px 0}
+.final-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.skip-link{position:fixed;z-index:110;left:12px;top:-70px;padding:12px;background:white;border:2px solid var(--ui-accent)}
+.skip-link:focus{top:12px}
+@media(max-width:768px){.final{padding:24px 20px}.final h2{font-size:26px}}
+@media(max-width:430px){.hero h1{font-size:30px}.hero{padding:36px 18px 24px}}

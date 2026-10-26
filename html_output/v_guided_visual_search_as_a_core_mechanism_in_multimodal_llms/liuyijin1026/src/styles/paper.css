@@ -1,0 +1,4 @@
+/* PaperSkill's paper-specific style entry delegates to the V* stylesheet.
+   The current page still loads its established styles from src/main.tsx and
+   component imports, so this compatibility entry adds no runtime overrides. */
+@import './vstar-paper.css';

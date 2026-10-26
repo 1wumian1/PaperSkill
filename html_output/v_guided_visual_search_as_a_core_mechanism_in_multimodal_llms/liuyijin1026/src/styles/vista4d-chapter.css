@@ -1,0 +1,78 @@
+/* Chapter skeleton copied from E:\vista4d_web\app\globals.css and
+   E:\vista4d_web\app\styles\paper-components.css. */
+.chapter { padding: 32px; border-radius: 26px; background: rgba(255,255,255,.98); box-shadow: 0 16px 46px rgba(24,39,58,.055); }
+.chap-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 0 0 8px; color: #21324a; font-size: 30px; font-weight: 800; letter-spacing: 0; line-height: 1.3; }
+.chap-title .num { color: #27446e; font-family: Georgia,serif; font-size: 26px; font-style: italic; font-weight: 700; }
+.badge-tag { display: inline-block; margin-left: 2px; padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 800; letter-spacing: 0; vertical-align: 2px; }
+.badge-tag.inf { background: rgba(34,141,92,.12); color: #228d5c; }
+.badge-tag.trn { background: rgba(240,126,71,.12); color: #f07e47; }
+.badge-tag.both { background: #eef3fb; color: #27446e; }
+.flow-mini { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin: 0 0 18px; padding: 10px 14px; border: 1px solid #d7deea; border-radius: 12px; background: #fff; font-size: 18px; line-height: 1.7; }
+.flow-step { display: flex; align-items: center; gap: 6px; padding: 4px 10px; border: 0; border-radius: 999px; background: #eef2f7; color: #8b97ab; font-size: 14px; font-weight: 600; transition: all 280ms cubic-bezier(.16,1,.3,1); }
+.flow-step.done { background: rgba(34,141,92,.12); color: #228d5c; }
+.flow-step.active { background: #27446e; color: #fff; animation: pulse-blue 2s ease-in-out infinite; }
+.flow-arrow { color: #9fb0c8; font-size: 14px; }
+@keyframes pulse-blue { 0%,100% { box-shadow: 0 0 0 0 rgba(39,68,110,.35); } 50% { box-shadow: 0 0 0 6px rgba(39,68,110,0); } }
+.chap-bridge { display: flex; align-items: stretch; gap: 0; overflow: hidden; margin: 20px 0 26px; border: 1px solid #d7deea; border-radius: 12px; background: linear-gradient(135deg,#eef3fb 0%,rgba(34,141,92,.12) 100%); color: #21324a; font-size: 18px; line-height: 1.7; }
+.chap-bridge::before { content: ""; width: 5px; flex-shrink: 0; background: linear-gradient(180deg,#27446e,#228d5c); }
+.cb-icon { display: flex; align-items: center; justify-content: center; width: 56px; flex-shrink: 0; background: rgba(255,255,255,.6); font-size: 28px; line-height: 1; }
+.cb-body { flex: 1; padding: 14px 16px; }
+.cb-title { margin-bottom: 4px; color: #27446e; font-size: 14px; font-weight: 800; letter-spacing: 0; text-transform: uppercase; }
+.cb-text { color: #68778f; font-size: 16px; line-height: 1.7; }
+.cb-text b { color: #21324a; font-weight: 700; }
+.cb-text em { color: #27446e; font-style: normal; font-weight: 600; }
+.learning-mode .chapter > .chap-title,
+.learning-mode .chapter > .flow-mini,
+.learning-mode .chapter > .chap-bridge { position: relative; left: 50%; width: min(100%,1000px); transform: translateX(-50%); }
+.learning-mode .chapter > .chap-title { margin-top: 0; margin-bottom: 20px; }
+.section-one-flow { display: grid; gap: 48px; max-width: 1020px; margin: 30px auto 0; }
+.section-one-subsection { min-width: 0; }
+.section-one-subsection > header { max-width: 860px; margin: 0 0 18px; }
+.section-one-subsection > header > span { display: block; margin-bottom: 7px; color: #667b91; font: 800 12px/1 var(--ui-font-mono); letter-spacing: .06em; font-size: 13px; }
+
+/* LearningModule rules copied from Vista4D app/styles/paper-components.css. */
+.learning-module { margin: 18px 0 28px; color: var(--ui-text-main); background: var(--ui-bg-card); border: 1px solid var(--ui-border); border-radius: var(--ui-radius-lg); overflow: hidden; box-shadow: 0 8px 22px rgba(29, 48, 78, 0.045); }
+.learning-module-header { display: flex; align-items: center; gap: 12px; padding: 14px 20px; background: var(--ui-bg-muted); border-bottom: 1px solid var(--ui-border); }
+.learning-module-number { flex: 0 0 auto; padding: 2px 8px; color: var(--ui-accent); font-family: var(--ui-font-mono); font-size: 16px; font-weight: 800; line-height: 1.5; background: var(--ui-bg-soft); border-radius: var(--ui-radius-sm); }
+.learning-module-heading { display: flex; min-width: 0; align-items: baseline; gap: 10px; }
+.learning-module-title { margin: 0; color: var(--ui-text-main); font-size: 18px; font-weight: 800; line-height: 1.4; }
+.learning-module-eyebrow { color: var(--ui-text-light); font-family: var(--ui-font-mono); font-size: 13px; font-weight: 700; line-height: 1.4; }
+.learning-module-body { padding: 18px 22px 22px; }
+.learning-module-description { max-width: 900px; color: var(--ui-text-muted); font-size: 16px; line-height: 1.7; margin: 0 0 14px; }
+.learning-module-body > :first-child:not(.learning-module-description) { margin-top: 0; }
+.learning-module-body > :last-child { margin-bottom: 0; }
+
+/* Keep each existing V* interaction intact inside the copied subsection container. */
+.learning-module-body > .interactive-panel { margin: 0; border: 0; border-radius: 0; box-shadow: none; }
+.learning-module-body > .interactive-panel > .interactive-head { display: none; }
+.learning-module-body > .interactive-panel > .module-body { padding: 0; }
+.learning-module-body > .lead { margin: 0 0 14px; }
+
+/* Bottom navigation copied from E:\PaperSkill\paper-skill\assets\react-template\src\styles\components.css. */
+.slide-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: center; gap: 16px; padding: 10px 16px 10px 312px; border-top: 1px solid var(--ui-border); background: var(--ui-bg-card); flex-shrink: 0; transition: padding-left var(--t-med) var(--ease-out); }
+.slide-nav-btn { padding: 9px 22px; border: 1px solid var(--ui-border); border-radius: var(--ui-radius-pill); background: var(--ui-bg-card); color: var(--ui-text-muted); font-size: 1rem; font-weight: 500; cursor: pointer; transition: background-color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out); }
+.slide-nav-btn:hover:not(:disabled) { border-color: var(--ui-accent); color: var(--ui-accent); transform: translateY(-1px); }
+.slide-nav-btn:active:not(:disabled) { transform: translateY(0) scale(0.97); }
+.slide-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.slide-nav-btn-primary { background: var(--ui-accent); border-color: var(--ui-accent); color: #fff; }
+.slide-nav-btn-primary:hover:not(:disabled) { background: #1f385d; border-color: #1f385d; color: #fff; }
+.slide-nav-counter { color: var(--ui-text-light); font-family: var(--ui-font-mono); font-size: 1rem; font-weight: 500; min-width: 64px; text-align: center; }
+@media (max-width: 768px) {
+  .chap-title { font-size: 26px; }
+  .learning-mode .chapter > .chap-title,
+  .learning-mode .chapter > .flow-mini,
+  .learning-mode .chapter > .chap-bridge { width: min(100%,calc(100vw - 56px)); }
+  .learning-module-header { align-items: flex-start; padding: 13px 15px; }
+  .learning-module-heading { flex-wrap: wrap; gap: 2px 8px; }
+  .learning-module-body { padding: 16px 15px 18px; }
+  .slide-nav { padding: 8px 12px; gap: 8px; }
+  .slide-nav-btn { padding: 8px 14px; }
+  .slide-nav-counter { min-width: 48px; }
+}
+@media (max-width: 720px) {
+  .flow-mini { gap: 3px; padding: 9px 10px; }
+  .flow-step { padding: 4px 8px; font-size: 13px; }
+  .chap-bridge { flex-wrap: wrap; }
+  .cb-icon { width: 48px; }
+}
+@media (prefers-reduced-motion: reduce) { .flow-step.active { animation: none; } }

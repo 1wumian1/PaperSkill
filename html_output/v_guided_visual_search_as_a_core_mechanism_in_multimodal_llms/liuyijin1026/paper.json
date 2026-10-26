@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "paperName": "v_guided_visual_search_as_a_core_mechanism_in_multimodal_llms",
+  "title": "V*: Guided Visual Search as a Core Mechanism in Multimodal LLMs",
+  "authors": [],
+  "year": null,
+  "venue": "",
+  "paperUrl": "https://arxiv.org/abs/2312.14135",
+  "participants": [
+    {
+      "name": "刘艺锦",
+      "github": "An-apple-cpu"
+    }
+  ],
+  "topics": [],
+  "skillVersion": "1.3.0",
+  "status": "review",
+  "entry": "index.html",
+  "version": "liuyijin1026",
+  "versionDate": "2026-10-26"
+}
