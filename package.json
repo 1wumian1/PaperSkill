@@ -8,6 +8,8 @@
     "validate:pr": "node scripts/validate-pr-scope.js",
     "catalog": "node scripts/generate-catalog.js",
     "catalog:check": "node scripts/generate-catalog.js --check",
+    "sync:paperskill": "node scripts/sync-paperskill.js",
+    "test:paperskill-sync": "node --test scripts/tests/paperskill-sync.test.js",
     "import": "node scripts/import-paper.js",
     "modify": "node scripts/modify-version.js",
     "migrate:versions": "node scripts/migrate-to-versions.js",

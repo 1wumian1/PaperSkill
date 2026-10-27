@@ -1,0 +1,66 @@
+name: Sync PaperSkill database
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'Actually create database records (false only previews metadata)'
+        type: boolean
+        default: false
+      only:
+        description: 'Optional paper-name/version; empty scans all versions'
+        type: string
+        default: ''
+
+# A cancelled run leaves one pending record for reconciliation rather than duplicating it.
+# Full scans + persistent state also recover versions from superseded pending push runs.
+concurrency:
+  group: paperskill-database-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' || vars.PAPERSKILL_SYNC_ENABLED == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+      - name: Test database synchronization
+        run: node --test scripts/tests/paperskill-sync.test.js
+      - name: Synchronize merged versions
+        env:
+          APPLY: ${{ github.event_name == 'push' || inputs.apply }}
+          ONLY: ${{ inputs.only }}
+          PAPERSKILL_API_BASE_URL: ${{ vars.PAPERSKILL_API_BASE_URL || 'https://php-testbed-lyx.reduct.cn' }}
+          PAPERSKILL_INCLUDE_JIANLUN_UUID: ${{ vars.PAPERSKILL_INCLUDE_JIANLUN_UUID }}
+          PAPERSKILL_API_HEADERS: ${{ secrets.PAPERSKILL_API_HEADERS }}
+          PAPERSKILL_STATE_BRANCH: ${{ vars.PAPERSKILL_STATE_BRANCH || 'paperskill-sync-state' }}
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          args=(--github-state)
+          if [[ "$APPLY" == "true" ]]; then args+=(--apply); fi
+          if [[ -n "$ONLY" ]]; then args+=(--only "$ONLY"); fi
+          node scripts/sync-paperskill.js "${args[@]}"
+      - name: Upload sync report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paperskill-sync-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: tmp/paperskill-sync/report.json
+          if-no-files-found: ignore
