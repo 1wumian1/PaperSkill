@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const { ROOT, OUTPUT_ROOT, PAPER_NAME_RE, VERSION_NAME_RE, findPaper, listVersions } = require('./lib/repository');
+const { resolveGithubLogin } = require('./lib/github-identity');
 
 function usage() {
   console.error('用法: npm run import -- <生成目录> <paper-name> --title "..." --paper-url "https://..." --participant "李雷" [--pinyin "limei"] [--github "..."] [--jianlun-id "减论完整账号ID"] [--date 0903] [--version liming0903] [--force] [--year 2024] [--venue "..."] [--topics "CV,CNN"]');
@@ -86,6 +87,7 @@ for (const key of ['title', 'paper-url', 'participant']) {
   if (!opts[key]) throw new Error(`缺少 --${key}`);
 }
 if (!/^https:\/\//.test(opts['paper-url'])) throw new Error('--paper-url 必须是 https:// 链接');
+opts.github = resolveGithubLogin(opts.github);
 
 const versionFile = path.join(ROOT, 'paper-skill', 'VERSION');
 if (!fs.existsSync(versionFile)) throw new Error('缺少 paper-skill/VERSION');
@@ -109,7 +111,7 @@ if (target === source || target.startsWith(`${source}${path.sep}`)) throw new Er
 
 copyFiltered(source, target);
 const participant = { name: opts.participant };
-if (opts.github) participant.github = opts.github.replace(/^@/, '');
+participant.github = opts.github;
 const jianlunId = String(opts['jianlun-id'] || '').trim();
 if (jianlunId) participant.jianlunId = jianlunId;
 const meta = {
@@ -130,6 +132,7 @@ const meta = {
 };
 fs.writeFileSync(path.join(target, 'paper.json'), `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
 console.log(`已导入：${path.relative(ROOT, target)}`);
+console.log(`本版 GitHub 用户名：${participant.github}`);
 const paper = findPaper(paperName);
 const siblings = paper ? listVersions(paper) : [];
 console.log(`该论文现有 ${siblings.length} 个版本：${siblings.map((item) => item.version).join('、') || '（无）'}`);

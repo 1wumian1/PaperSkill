@@ -44,6 +44,8 @@ npm run import -- <生成目录> <paper-name> --title "英文论文名" --paper-
 
 `--participant` 是公开展示名（可写中文），`--pinyin` 是姓名拼音小写，用于生成版本目录名；中文姓名必须显式提供 `--pinyin`。`--date 0903` 可指定修改日期（MMDD 或 YYYY-MM-DD），缺省取当天。
 
+`--github` 显式提供时优先采用；本人提交时可省略，导入和复制版本命令会通过 `gh api --hostname github.com user --jq .login` 自动获取当前登录用户名。读取失败会停止导入，请先 `gh auth login` 或显式提供用户名。维护者代传他人作品时必须用 `--github` 指定真实贡献者；不要把当前维护者、合并者、Git 提交展示名或邮箱当成作者账号。
+
 `--jianlun-id` 是可选的减论账号 ID，请从减论「编辑资料 → 账号 ID」右侧复制完整值，与 GitHub 用户名一起提供。它按字符串写入本版 `paper.json` 的 `participants[].jianlunId`；集合站版本弹窗会提供“查看 →”入口，点击后显示并可复制完整 ID。没有或暂不填写时省略此参数，页面显示「暂无」；不要传入「暂无」或带省略号的截断 ID。
 
 导入后生成：
@@ -99,7 +101,7 @@ html_output/<paper-name>/<version>/
 - `paperName` 必须与论文目录名一致；
 - `version` 必须与版本目录名一致（姓名拼音小写加 MMDD）；
 - `versionDate` 记录该版本的修改日期（YYYY-MM-DD）；
-- `participants` 保存本版贡献者的 `name`、可选 `github` 和可选 `jianlunId`；减论 ID 必须为字符串，缺失或空字符串时显示「暂无」，旧版本无需补写；
+- `participants` 保存本版贡献者的 `name`、`github` 和可选 `jianlunId`；新增或修改的 `paper.json` 必须填写有效的 GitHub 用户名，PR 校验会检查。全库校验仍兼容尚未修复的历史缺失值，不会因此阻止无关 PR；减论 ID 必须为字符串，缺失或空字符串时显示「暂无」，旧版本无需补写减论 ID；
 - 分支名为 `paper/<paper-name>`；
 - 同一 `paperUrl` 对应一个论文目录，目录下可以有多位同学的版本。
 

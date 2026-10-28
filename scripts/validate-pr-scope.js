@@ -4,6 +4,7 @@
 const fs = require('fs');
 const { spawnSync } = require('child_process');
 const { ROOT } = require('./lib/repository');
+const { githubParticipantErrors } = require('./lib/github-identity');
 
 const pullRequestBase = process.env.GITHUB_BASE_REF;
 const base = pullRequestBase || process.argv[2];
@@ -70,12 +71,14 @@ const added = new Set();
 const deleted = new Set();
 const modified = new Set();
 const addedVersions = new Set();
+const changedMetadata = new Set();
 for (const line of statusLines) {
   const parts = line.split('\t');
   const status = parts[0];
   const code = status[0];
   // R/C 行格式为 "R100\t<旧路径>\t<新路径>"，目录名以新路径为准
   const file = code === 'R' || code === 'C' ? parts[2] : parts[1];
+  if (code !== 'D' && /^html_output\/[^/]+\/[^/]+\/paper\.json$/.test(file || '')) changedMetadata.add(file);
   const match = file && file.replace(/\\/g, '/').match(/^html_output\/([^/]+)(?:\/([^/]+))?\//);
   if (!match) continue;
   const [, dir, version] = match;
@@ -88,6 +91,20 @@ const paperDirs = new Set([...added, ...deleted, ...modified]);
 const touchesSkill = files.some((file) => file.startsWith('paper-skill/'));
 const touchesPaper = paperDirs.size > 0;
 const touchesCatalog = files.includes('catalog/papers.json');
+
+// Validate newly added/edited metadata while allowing untouched historical versions to remain readable.
+for (const file of changedMetadata) {
+  let errors;
+  try {
+    errors = githubParticipantErrors(JSON.parse(fs.readFileSync(`${ROOT}/${file}`, 'utf8')));
+  } catch {
+    errors = ['无法读取有效的 paper.json'];
+  }
+  if (errors.length) {
+    console.error(`${file}: ${errors.join('；')}。请补充贡献者账号，不能使用合并者账号自动代填。`);
+    process.exit(1);
+  }
+}
 
 if (touchesPaper && touchesCatalog) {
   console.error('论文参与 PR 不应提交 catalog/papers.json；该索引由管理员统一生成。');

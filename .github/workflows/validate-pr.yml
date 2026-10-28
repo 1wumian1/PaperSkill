@@ -24,6 +24,8 @@ jobs:
         run: npm run validate
       - name: Test database synchronization
         run: npm run test:paperskill-sync
+      - name: Test contributor identity
+        run: npm run test:github-identity
       - name: Validate pull request scope
         if: github.event_name == 'pull_request'
         run: npm run validate:pr
