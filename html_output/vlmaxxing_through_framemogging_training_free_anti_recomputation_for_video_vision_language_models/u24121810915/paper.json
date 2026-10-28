@@ -8,7 +8,8 @@
   "paperUrl": "https://arxiv.org/search/?query=VLMaxxing&searchtype=all",
   "participants": [
     {
-      "name": "2412181"
+      "name": "2412181",
+      "github": "x242601106242-boop"
     }
   ],
   "topics": [

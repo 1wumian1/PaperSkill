@@ -16,7 +16,8 @@
   "paperUrl": "https://arxiv.org/abs/2605.12587",
   "participants": [
     {
-      "name": "shenyihao"
+      "name": "shenyihao",
+      "github": "shview"
     }
   ],
   "topics": [],
