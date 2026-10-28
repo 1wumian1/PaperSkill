@@ -98,6 +98,9 @@ function validateMetadata(meta, expectedPaperName, expectedVersion) {
   } else {
     meta.participants.forEach((item, index) => {
       if (!item || typeof item.name !== 'string' || !item.name.trim()) errors.push(`participants[${index}].name 不能为空`);
+      if (!item || typeof item.github !== 'string' || !item.github.trim()) {
+        errors.push(`participants[${index}].github 必须是非空字符串`);
+      }
       if (item && item.jianlunId !== undefined && typeof item.jianlunId !== 'string') {
         errors.push(`participants[${index}].jianlunId 必须是字符串（未填写时可省略）`);
       }
