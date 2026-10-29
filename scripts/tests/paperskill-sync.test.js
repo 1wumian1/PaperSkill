@@ -195,3 +195,75 @@ test('first remote failure defers other new versions without marking them as att
   assert.equal(calls, 1);
   assert.ok(!state.versions['test_paper/bob1027']);
 });
+
+test('transient GitHub read failures retry, while permission failures stop immediately', async () => {
+  for (const status of [503, 403]) {
+    let calls = 0;
+    const store = githubStore({ repository: 'example/repo', token: 'test-only', branch: 'sync-state', endpoint,
+      sleep: async () => {},
+      fetchImpl: async (url) => {
+        calls += 1;
+        if (calls === 1) return new Response('', { status });
+        if (url.includes('/contents/')) return Response.json({ sha: 'old', content: Buffer.from(JSON.stringify(newState(endpoint))).toString('base64') });
+        return Response.json({ object: { sha: 'head' } });
+      },
+    });
+    if (status === 403) {
+      await assert.rejects(store.load(), /HTTP 403/);
+      assert.equal(calls, 1);
+    } else {
+      assert.deepEqual(await store.load(), newState(endpoint));
+      assert.equal(calls, 3);
+    }
+  }
+});
+
+test('checkpoint recovery reads back ambiguous writes without duplicating database creates or overwriting concurrent changes', async () => {
+  for (const failure of ['not-committed', 'committed', 'lost-response', 'conflict', 'persistent']) {
+    let stored = newState(endpoint);
+    let storedSha = 'old';
+    let puts = 0;
+    let creates = 0;
+    const store = githubStore({ repository: 'example/repo', token: 'test-only', branch: 'sync-state', endpoint,
+      sleep: async () => {},
+      fetchImpl: async (url, options) => {
+        if (options.method !== 'PUT') return url.includes('/contents/')
+          ? Response.json({ sha: storedSha, content: Buffer.from(JSON.stringify(stored)).toString('base64') })
+          : Response.json({ object: { sha: 'head' } });
+        puts += 1;
+        const body = JSON.parse(options.body);
+        assert.equal(body.sha, storedSha);
+        // The first PUT saves intent; the second saves the actual successful ID.
+        if (puts === 2 || failure === 'persistent' && puts > 2) {
+          if (['committed', 'lost-response'].includes(failure)) {
+            stored = JSON.parse(Buffer.from(body.content, 'base64').toString());
+            storedSha = 'committed-after-error';
+          }
+          if (failure === 'conflict') storedSha = 'another-writer';
+          if (failure === 'lost-response') throw new Error('socket reset after commit');
+          return new Response('', { status: 503 });
+        }
+        stored = JSON.parse(Buffer.from(body.content, 'base64').toString());
+        storedSha = `saved-${puts}`;
+        return Response.json({ content: { sha: storedSha } });
+      },
+    });
+    const state = await store.load();
+    const plan = planFor([submission], {}, false, () => metadata());
+    const results = [];
+    const run = () => synchronize({ plan, state, save: (value) => store.save(value),
+      create: async () => { creates += 1; return 42; }, onResult: (row) => results.push(row) });
+    if (['conflict', 'persistent'].includes(failure)) {
+      await assert.rejects(run(), failure === 'conflict' ? /其他写入/ : /HTTP 503/);
+      assert.equal(results[0].id, 42, 'the recovery report retains the ID even if checkpoint storage fails');
+      assert.equal(puts, failure === 'persistent' ? 5 : 2);
+    } else {
+      await run();
+      assert.equal(stored.versions[plan[0].key].id, 42);
+      assert.equal(puts, failure === 'not-committed' ? 3 : 2);
+      const reloaded = await store.load();
+      assert.equal((await synchronize({ plan, state: reloaded, save: (value) => store.save(value), create: async () => assert.fail('must not recreate') }))[0].status, 'unchanged');
+    }
+    assert.equal(creates, 1);
+  }
+});

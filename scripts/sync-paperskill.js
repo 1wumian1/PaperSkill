@@ -209,7 +209,8 @@ function localStore(filename, endpoint) {
   };
 }
 
-function githubStore({ repository, token, branch, endpoint, apiBase = 'https://api.github.com', fetchImpl = fetch }) {
+function githubStore({ repository, token, branch, endpoint, apiBase = 'https://api.github.com', fetchImpl = fetch,
+  sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) }) {
   if (!/^[\w.-]+\/[\w.-]+$/.test(repository || '') || !token) throw new Error('GitHub 状态存储需要 GITHUB_REPOSITORY 和 GITHUB_TOKEN');
   if (!/^[a-zA-Z0-9_-]+$/.test(branch) || branch === 'main' || branch === 'master') throw new Error('状态分支必须是独立的简单分支名');
   let sha;
@@ -217,15 +218,40 @@ function githubStore({ repository, token, branch, endpoint, apiBase = 'https://a
   let lastWrite = 0;
   let lastContent;
   const root = `${apiBase.replace(/\/$/, '')}/repos/${repository}`;
-  async function request(suffix, method = 'GET', body) {
-    const response = await fetchImpl(`${root}${suffix}`, {
-      method, redirect: 'error', signal: AbortSignal.timeout(30000),
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json' },
-      ...(body ? { body: JSON.stringify(body) } : {}),
-    });
+  function retryDelay(error, attempt) {
+    return Math.max(Math.min(30000, 2000 * 2 ** attempt), error.retryAfter || 0);
+  }
+  async function requestOnce(suffix, method, body) {
+    let response;
+    try {
+      response = await fetchImpl(`${root}${suffix}`, {
+        method, redirect: 'error', signal: AbortSignal.timeout(30000),
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json' },
+        ...(body ? { body: JSON.stringify(body) } : {}),
+      });
+    } catch {
+      throw Object.assign(new Error('GitHub 状态存储网络请求失败；不会继续创建记录'), { retryable: true });
+    }
     if (response.status === 404) return null;
-    if (!response.ok) throw new Error(`GitHub 状态存储 HTTP ${response.status}；检查分支权限/规则，不会继续创建记录`);
-    return response.json();
+    if (!response.ok) {
+      const retryable = response.status === 429 || response.status >= 500;
+      const retryAfter = response.headers.get('retry-after');
+      const delay = /^\d+$/.test(retryAfter || '') ? Number(retryAfter) * 1000 : Date.parse(retryAfter) - Date.now();
+      throw Object.assign(new Error(`GitHub 状态存储 HTTP ${response.status}；${retryable ? '临时服务错误或限流' : '请检查权限、分支规则或写入冲突'}，不会继续创建记录`),
+        { retryable, retryAfter: Number.isFinite(delay) ? Math.max(0, delay) : 0 });
+    }
+    try { return await response.json(); } catch {
+      throw Object.assign(new Error('GitHub 状态存储响应无法解析；不会继续创建记录'), { retryable: true });
+    }
+  }
+  async function request(suffix, method = 'GET', body) {
+    for (let attempt = 0; ; attempt += 1) {
+      try { return await requestOnce(suffix, method, body); } catch (error) {
+        // Only reads are safe to retry here. Checkpoint writes reconcile below.
+        if (method !== 'GET' || !error.retryable || attempt >= 3) throw error;
+        await sleep(retryDelay(error, attempt));
+      }
+    }
   }
   return {
     async load() {
@@ -248,14 +274,32 @@ function githubStore({ repository, token, branch, endpoint, apiBase = 'https://a
       const content = JSON.stringify(state, null, 2);
       if (content === lastContent) return;
       // Each checkpoint is a commit; stay below GitHub's secondary write rate limit.
-      await new Promise((resolve) => setTimeout(resolve, Math.max(0, 1500 - (Date.now() - lastWrite))));
-      const result = await request(`/contents/${STATE_FILE}`, 'PUT', {
+      await sleep(Math.max(0, 1500 - (Date.now() - lastWrite)));
+      const body = {
         branch, message: 'chore: checkpoint PaperSkill database sync',
         content: Buffer.from(`${content}\n`).toString('base64'),
         ...(sha ? { sha } : {}),
-      });
-      if (!result?.content?.sha) throw new Error('无法保存同步状态');
-      sha = result.content.sha;
+      };
+      for (let attempt = 0; ; attempt += 1) {
+        try {
+          const result = await request(`/contents/${STATE_FILE}`, 'PUT', body);
+          if (!result?.content?.sha) throw Object.assign(new Error('无法确认同步状态已保存'), { retryable: true });
+          sha = result.content.sha;
+          break;
+        } catch (error) {
+          if (!error.retryable) throw error;
+          await sleep(retryDelay(error, attempt));
+          // A 503 or lost response may follow a committed PUT. Read back before retrying.
+          const file = await request(`/contents/${STATE_FILE}?ref=${branch}`);
+          const saved = file && JSON.stringify(JSON.parse(Buffer.from(file.content, 'base64').toString('utf8')), null, 2);
+          if (saved === content) {
+            sha = file.sha;
+            break;
+          }
+          if ((file?.sha || undefined) !== sha) throw new Error('GitHub 同步状态已被其他写入修改；停止以免覆盖');
+          if (attempt >= 3) throw error;
+        }
+      }
       lastContent = content;
       lastWrite = Date.now();
     },
@@ -294,6 +338,7 @@ async function main(args = process.argv.slice(2), env = process.env) {
   const reportFile = path.resolve(ROOT, options.report);
   fs.mkdirSync(path.dirname(reportFile), { recursive: true });
   let results = [];
+  let fatalError;
   try {
     if (!options.apply) {
       // No network requests, state writes or UUID values in a preview.
@@ -311,17 +356,20 @@ async function main(args = process.argv.slice(2), env = process.env) {
         : localStore(path.resolve(ROOT, options.state), endpoint);
       const state = await store.load();
       validateState(state, endpoint);
-      await synchronize({ plan, state, save: (value) => store.save(value), create: (payload) => createVersion(endpoint, payload, headers), onResult: (row) => { results.push(row); console.log(`${row.status}: ${row.key}${row.reason ? ` — ${row.reason}` : ''}`); } });
+      await synchronize({ plan, state, save: (value) => store.save(value), create: (payload) => createVersion(endpoint, payload, headers), onResult: (row) => { results.push(row); console.log(`${row.status}: ${row.key}${row.id ? ` (id=${row.id})` : ''}${row.reason ? ` — ${row.reason}` : ''}`); } });
     }
+  } catch (error) {
+    fatalError = error;
   } finally {
-    fs.writeFileSync(reportFile, `${JSON.stringify({ endpoint, apply: options.apply, results }, null, 2)}\n`);
+    fs.writeFileSync(reportFile, `${JSON.stringify({ endpoint, apply: options.apply, ...(fatalError ? { error: fatalError.message } : {}), results }, null, 2)}\n`);
   }
   const counts = results.reduce((acc, row) => ({ ...acc, [row.status]: (acc[row.status] || 0) + 1 }), {});
   console.log(JSON.stringify(counts));
   console.log(`报告：${path.relative(ROOT, reportFile)}`);
   if (env.GITHUB_STEP_SUMMARY) {
-    fs.appendFileSync(env.GITHUB_STEP_SUMMARY, `### PaperSkill 数据库同步\n\n${options.apply ? '执行' : '预览'}结果：\`${JSON.stringify(counts)}\`。完整问题清单见 sync-report artifact。\n`);
+    fs.appendFileSync(env.GITHUB_STEP_SUMMARY, `### PaperSkill 数据库同步\n\n${options.apply ? '执行' : '预览'}结果：\`${JSON.stringify(counts)}\`。完整问题清单及成功记录 ID 见 sync-report artifact。\n${fatalError ? '\n同步中断；此前成功创建的记录不会回滚，请查看报告核对未保存的 ID。\n' : ''}`);
   }
+  if (fatalError) throw fatalError;
   if (options.apply && results.some((row) => ['blocked', 'uncertain'].includes(row.status))) process.exitCode = 1;
 }
 
