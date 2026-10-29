@@ -44,6 +44,8 @@ npm run import -- <生成目录> <paper-name> --title "英文论文名" --paper-
 
 `--participant` 是公开展示名（可写中文），`--pinyin` 是姓名拼音小写，用于生成版本目录名；中文姓名必须显式提供 `--pinyin`。`--date 0903` 可指定修改日期（MMDD 或 YYYY-MM-DD），缺省取当天。
 
+`--paper-url`（写入 `paper.json` 的 `paperUrl`）优先填写同一篇论文的 arXiv 摘要页链接，例如 `https://arxiv.org/abs/1706.03762`。先核对论文标题和作者；没有找到可确认的 arXiv 版本时，再填写 DOI、会议或期刊论文页、作者公开 PDF 等其他可核实的公开来源链接。
+
 `--github` 显式提供时优先采用；本人提交时可省略，导入和复制版本命令会通过 `gh api --hostname github.com user --jq .login` 自动获取当前登录用户名。读取失败会停止导入，请先 `gh auth login` 或显式提供用户名。维护者代传他人作品时必须用 `--github` 指定真实贡献者；不要把当前维护者、合并者、Git 提交展示名或邮箱当成作者账号。
 
 `--jianlun-id` 是可选的减论账号 ID，请从减论「编辑资料 → 账号 ID」右侧复制完整值，与 GitHub 用户名一起提供。它按字符串写入本版 `paper.json` 的 `participants[].jianlunId`；集合站版本弹窗会提供“查看 →”入口，点击后显示并可复制完整 ID。没有或暂不填写时省略此参数，页面显示「暂无」；不要传入「暂无」或带省略号的截断 ID。

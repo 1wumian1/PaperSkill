@@ -4,6 +4,8 @@
 
 > 如果本次是在已有版本上继续修改（功能 6），网页已经位于 `html_output/<论文名>/<版本>/`，跳过第 5 步的 `npm run import`，其余步骤照常执行。
 
+导入或核对已有版本时，`--paper-url` 和 `paper.json` 的 `paperUrl` 均按 `AGENT_WORKFLOW.md` §3 选择：优先使用经标题、作者核对的同一篇论文的 `https://arxiv.org/abs/<论文ID>`；没有找到可确认的 arXiv 版本时，再使用其他可核实的公开来源链接。
+
 1. 比较当前 `package.json` 和依赖锁文件与首次安装后的内容指纹：如果文件集合和内容均未变化且 `node_modules/` 仍可用，跳过依赖安装；如果任一文件新增、删除或改变，或者 `node_modules/` 缺失，则重新执行 `npm install`；
 2. 无论是否跳过安装，都必须重新执行 `npm run build` 和页面测试。若跳过安装后构建因依赖缺失或损坏失败，应自动执行一次 `npm install` 后重新构建；
 3. 核对公开展示名、GitHub 用户名、减论 ID（可选，未提供则显示「暂无」）、姓名拼音小写、`paperName`（论文名称：论文全称小写加下划线，例如：attention_is_all_you_need）和版本目录名（`姓名拼音小写 + 修改日期 MMDD`，例如：liming0903）；GitHub 用户名按 `AGENT_WORKFLOW.md` §3 优先复用明确值，否则在本人提交时读取当前登录账号，避免重复询问；代传他人作品时显式指定真实作者。尚未询问减论 ID 时，按 §3 引导复制完整账号 ID；

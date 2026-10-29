@@ -64,6 +64,8 @@ Agent **只读取 `README.md` 与 `docs/` 下的文档**来理解「该做什么
 
 `paperName` 为论文全称小写加下划线连接，`version` 为姓名拼音小写加修改日期。教程最终位于 `html_output/<paperName>/<version>/`，同一篇论文的多个版本并列保留。Agent 可以给出建议值，但应让使用者确认论文和身份信息。
 
+论文链接（`paper.json` 的 `paperUrl`、导入参数 `--paper-url`）优先使用对应论文的 arXiv 摘要页链接，格式为 `https://arxiv.org/abs/<论文ID>`。即使使用者提供的是 DOI、会议论文页、PDF 或项目主页，也应先查找并核对同一篇论文的 arXiv 版本，确认标题和作者对应后采用；没有找到可确认的 arXiv 版本时，再使用其他可核实的公开来源链接。不要用主题相近的其他论文替代原文，也不要猜测 arXiv ID。
+
 GitHub 用户名优先复用使用者已明确提供的值；未提供且是本人提交时，Agent 先运行 `gh api --hostname github.com user --jq .login` 获取当前登录账号，作为公开署名候选与其他身份信息一起核对。导入和复制版本命令在省略 `--github` 时也会自动读取此账号；读取失败会停止，不会生成缺账号的 `paper.json`。仅有浏览器、Git HTTPS 或 SSH 登录不保证 GitHub CLI 已登录，不能从 `git config user.name`、邮箱或目录名猜测用户名。
 
 维护者代传他人作品、多账号登录或当前账号与作者不同的场景，必须用 `--github` 明确传入真实贡献者，覆盖当前登录账号。CI 不自动将机器人、PR 合并者或 `github.actor` 填为作者。不要据当前维护者账号回填历史缺失值。
