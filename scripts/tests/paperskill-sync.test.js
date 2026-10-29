@@ -196,6 +196,56 @@ test('first remote failure defers other new versions without marking them as att
   assert.ok(!state.versions['test_paper/bob1027']);
 });
 
+test('business 404 skips only the missing paper, continues the batch, and retries it only after correction', async () => {
+  const plan = planFor([submission, { paperName: 'test_paper', version: 'bob1027' }], {}, false,
+    (item) => metadata({ version: item.version }));
+  const state = newState(endpoint);
+  let calls = 0;
+  const create = async (payload) => {
+    calls += 1;
+    return createVersion(endpoint, payload, {}, async () => Response.json(payload.version_name === 'alice1027'
+      ? { code: 404, msg: 'not found', data: [] } : { code: 200, data: { id: 42 } }));
+  };
+  const save = async () => {};
+  assert.deepEqual((await synchronize({ plan, state, save, create })).map(row => row.status), ['not_found', 'created']);
+  assert.deepEqual((await synchronize({ plan, state, save, create })).map(row => row.status), ['not_found', 'unchanged']);
+  assert.equal(calls, 2, 'unchanged missing identifiers must not be retried');
+  const corrected = { ...plan[0], fingerprint: 'corrected', payload: { ...plan[0].payload, arxiv_id: '2403.11549' } };
+  assert.equal((await synchronize({ plan: [corrected], state, save, create: async () => 43 }))[0].id, 43);
+});
+
+test('HTTP 404 and contradictory business responses still require reconciliation', async () => {
+  for (const response of [new Response('not found', { status: 404 }), Response.json({ code: 404, data: { id: 99 } })]) {
+    await assert.rejects(createVersion(endpoint, {}, {}, async () => response), error => !error.paperNotFound);
+  }
+});
+
+test('confirmed absence unlocks only the exact old attempt with a corrected payload, once', async () => {
+  const old = planFor([submission], {}, false, () => metadata())[0];
+  const corrected = planFor([submission], { 'test_paper/alice1027': { arxiv_id: '2403.11549', confirmed_missing_fingerprint: old.fingerprint } }, false, () => metadata())[0];
+  assert.equal(corrected.payload.arxiv_id, '2403.11549');
+  assert.ok(!Object.hasOwn(corrected.payload, 'confirmed_missing_fingerprint'));
+  assert.throws(() => payloadFor(submission, metadata(), { confirmed_missing_fingerprint: 'invalid' }), /SHA-256/);
+  for (const candidate of [{ ...corrected, confirmedMissingFingerprint: 'different' }, { ...old, confirmedMissingFingerprint: old.fingerprint }]) {
+    const state = newState(endpoint);
+    state.versions[old.key] = { status: 'uncertain', fingerprint: old.fingerprint };
+    assert.equal((await synchronize({ plan: [candidate], state, save: async () => {}, create: async () => assert.fail('must not retry') }))[0].status, 'blocked');
+  }
+  for (const succeeds of [true, false]) {
+    const state = newState(endpoint);
+    state.versions[old.key] = { status: 'uncertain', fingerprint: old.fingerprint };
+    let calls = 0;
+    const run = () => synchronize({ plan: [corrected], state, save: async () => {}, create: async () => {
+      calls += 1;
+      if (!succeeds) throw new Error('timeout');
+      return 77;
+    } });
+    assert.equal((await run())[0].status, succeeds ? 'created' : 'uncertain');
+    assert.equal((await run())[0].status, succeeds ? 'unchanged' : 'blocked');
+    assert.equal(calls, 1);
+  }
+});
+
 test('transient GitHub read failures retry, while permission failures stop immediately', async () => {
   for (const status of [503, 403]) {
     let calls = 0;

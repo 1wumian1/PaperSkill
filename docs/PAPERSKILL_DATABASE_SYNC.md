@@ -53,6 +53,8 @@ PR 合并进 `main` 后，新增的 `Sync PaperSkill database` 工作流读取�
 
 可覆盖字段是 `arxiv_id`、`doi`、`user_display_name`、`user_github_name`、`uuid`、`remote_id`。覆盖 arXiv/DOI 时只提供其中一种。未知字段会报错。原始 `paper.json` 不必增加不符合现有 schema 的字段。
 
+恢复历史待核对请求时，还支持维护字段 `confirmed_missing_fingerprint`：只有对方明确确认旧请求未创建记录后，才填写该旧请求的 SHA-256，并修正论文标识。它仅允许匹配该旧摘要的 `pending/uncertain` 项以不同的新请求再次提交；新请求再超时不会被这个旧确认重复放行。此字段不上传给对方。已成功的 `synced` 项不受这个字段影响。
+
 `participants[].jianlunId` 是否等于接口的 `uuid` 尚未经确认，因此默认不发送。确认两者相同后，才将 Actions variable `PAPERSKILL_INCLUDE_JIANLUN_UUID` 设为 `true`；个别版本也可以显式覆盖 `uuid`。预览和报告不输出 UUID 值。
 
 ## 认证
@@ -75,7 +77,7 @@ GitHub 状态存储遇到网络错误、HTTP 429 或 5xx 时，会有限重试�
 
 如果日志显示 `created` 后出现 GitHub 保存失败，数据库记录已经创建，不能删除状态后重新导入。下载该次运行的报告，找到对应版本的 `created` 项及 `id`，把这个真实 ID 填入覆盖文件的 `remote_id` 后再运行。即使流程中断，报告仍保留已处理记录及其 ID；新版日志也直接显示 ID，Summary 会显示已处理数量及中断提示。
 
-每个 POST 前先保存 `pending`，得到 HTTP 成功、JSON `code=200` 和有效数字 `data.id` 后记为 `synced`。下一次检查点或本轮结束时保存成功结果。如果发生超时、非 JSON、业务失败或流程被中断，该版本保持 `pending/uncertain`，后续运行不会盲目重发。
+每个 POST 前先保存 `pending`，得到 HTTP 成功、JSON `code=200` 和有效数字 `data.id` 后记为 `synced`。下一次检查点或本轮结束时保存成功结果。如果发生超时、非 JSON、未明确含义的业务失败或流程被中断，该版本保持 `pending/uncertain`，后续运行不会盲目重发。
 
 - 已实际创建：向覆盖文件添加真实 `remote_id`，运行后登记该 ID。
 - 已确认没有创建：从状态分支文件移除对应待核对的版本项，再运行。
@@ -83,7 +85,9 @@ GitHub 状态存储遇到网络错误、HTTP 429 或 5xx 时，会有限重试�
 - 祖先未同步：先解决祖先版本；脚本按祖先在前的顺序提交。
 - 部分失败：成功记录仍会保存，工作流显示失败并上传问题报告；修复后再次运行或等待下一次合并。
 
-首次远端请求失败后，本轮停止提交其他新版本（`deferred`），避免认证或服务器故障导致全部历史版本都进入待核对状态。已经成功的记录仍会保存。
+接口负责人已确认：HTTP 200 且业务 `code=404` 表示在对方论文库中找不到传入的 DOI/arXiv 标识，没有创建版本。脚本将其记为 `not_found`，继续处理其他论文。同一请求下次不会重发；修正标识、改变请求后可再次尝试。HTTP 404、含矛盾版本 ID 的业务 404、认证/服务器故障或结果不明确时仍停止本轮其他新请求（`deferred`）。已经成功的记录仍会保存。报告有 `not_found`、`blocked` 或 `uncertain` 时工作流仍显示失败，因此须结合分类计数判断实际入库进度。
+
+2026-10-29 对接确认 `boosting_continual_learning_of_vision_language_models_via_mixture_of_experts_adapters/songchenyi1011` 的 DOI 请求未入库，对方库仅收录 arXiv 标识。覆盖配置改为 `2403.11549`（https://arxiv.org/abs/2403.11549），并以 `confirmed_missing_fingerprint` 登记该次旧 DOI 请求的核对结果。
 
 对方的接口没有提供幂等键、已存在版本查询或通用更新接口，因此无法声称跨系统实现严格的“恰好一次”。状态检查点用于防止自动重复发送，结果不确定时仍需要核对。
 

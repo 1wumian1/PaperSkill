@@ -9,7 +9,7 @@ const { ROOT, listSubmissions, metadataFor } = require('./lib/repository');
 
 const DEFAULT_BASE_URL = 'https://php-testbed-lyx.reduct.cn';
 const STATE_FILE = 'paperskill-sync-state.json';
-const OVERRIDE_FIELDS = new Set(['arxiv_id', 'doi', 'user_display_name', 'user_github_name', 'uuid', 'remote_id']);
+const OVERRIDE_FIELDS = new Set(['arxiv_id', 'doi', 'user_display_name', 'user_github_name', 'uuid', 'remote_id', 'confirmed_missing_fingerprint']);
 
 function endpointFor(base) {
   const url = new URL(base);
@@ -39,6 +39,9 @@ function payloadFor(submission, meta, override = {}, includeUuid = false) {
   }
   if (override.remote_id !== undefined && (!Number.isSafeInteger(override.remote_id) || override.remote_id <= 0)) {
     throw new Error('remote_id 必须是对方已存在的版本正整数 ID');
+  }
+  if (override.confirmed_missing_fingerprint !== undefined && !/^[a-f0-9]{64}$/.test(override.confirmed_missing_fingerprint)) {
+    throw new Error('confirmed_missing_fingerprint 必须是已确认未入库的旧请求 SHA-256');
   }
   if (meta.paperName !== submission.paperName || meta.version !== submission.version) throw new Error('版本元数据与目录不一致');
   if (!Array.isArray(meta.participants) || meta.participants.length !== 1) throw new Error('接口仅有一组作者字段，需要明确唯一贡献者');
@@ -104,6 +107,7 @@ function planFor(submissions, overrides = {}, includeUuid = false, read = metada
       const payload = payloadFor(submission, meta, overrides[key], includeUuid);
       rows.set(key, {
         key, payload, fingerprint: fingerprint(payload), remoteId: overrides[key]?.remote_id,
+        confirmedMissingFingerprint: overrides[key]?.confirmed_missing_fingerprint,
         dependencies: (meta.ancestors || []).map((ancestor) => `${submission.paperName}/${ancestor.version}`),
       });
     } catch (error) {
@@ -148,6 +152,11 @@ async function createVersion(endpoint, payload, headers = {}, fetchImpl = fetch)
   });
   let data;
   try { data = await response.json(); } catch { throw new Error(`接口响应不是 JSON (HTTP ${response.status})，结果需核对`); }
+  // The API owner confirmed business code 404 means no matching paper and no version created.
+  // An HTTP 404 or a contradictory response containing an ID remains ambiguous.
+  if (response.status === 200 && data?.code === 404 && data.data?.id == null) {
+    throw Object.assign(new Error('对方库未找到对应论文（业务 code 404），未入库；请核对或更换论文标识'), { paperNotFound: true });
+  }
   if (!response.ok || data.code !== 200 || !Number.isSafeInteger(data.data?.id) || data.data.id <= 0) {
     // The response body may contain credentials or submitted metadata; do not log it.
     throw new Error(`接口未确认创建成功 (HTTP ${response.status}, code ${typeof data.code === 'number' ? data.code : 'invalid'})，结果需核对`);
@@ -161,6 +170,9 @@ async function synchronize({ plan, state, save, create, onResult = () => {} }) {
   for (const row of plan) {
     let result;
     const existing = state.versions[row.key];
+    // Manual confirmation applies only to the exact old request, never a later ambiguous attempt.
+    const confirmedMissing = ['pending', 'uncertain'].includes(existing?.status)
+      && row.confirmedMissingFingerprint === existing.fingerprint && row.fingerprint !== existing.fingerprint;
     if (row.error) {
       result = { key: row.key, status: 'blocked', reason: row.error };
     } else if (existing?.status === 'synced') {
@@ -171,7 +183,9 @@ async function synchronize({ plan, state, save, create, onResult = () => {} }) {
       // An operator can reconcile a previously imported or ambiguous request using its real ID.
       state.versions[row.key] = { status: 'synced', id: row.remoteId, fingerprint: row.fingerprint, source: 'adopted' };
       result = { key: row.key, status: 'adopted', id: row.remoteId };
-    } else if (existing) {
+    } else if (existing?.status === 'not_found' && existing.fingerprint === row.fingerprint) {
+      result = { key: row.key, status: 'not_found', reason: '对方库未找到对应论文；请求未变化，暂不重复发送，请修正论文标识后再试' };
+    } else if (existing && existing.status !== 'not_found' && !confirmedMissing) {
       result = { key: row.key, status: 'blocked', reason: '上次创建结果待核对，禁止自动重发；确认后用 remote_id 登记已有记录，或移除已确认未创建的状态项' };
     } else if (row.dependencies.some((key) => state.versions[key]?.status !== 'synced')) {
       result = { key: row.key, status: 'blocked', reason: '祖先版本尚未入库，请先补齐其元数据或登记已有 remote_id' };
@@ -186,9 +200,10 @@ async function synchronize({ plan, state, save, create, onResult = () => {} }) {
         state.versions[row.key] = { status: 'synced', id, fingerprint: row.fingerprint };
         result = { key: row.key, status: 'created', id };
       } catch (error) {
-        halted = true;
-        state.versions[row.key] = { status: 'uncertain', fingerprint: row.fingerprint };
-        result = { key: row.key, status: 'uncertain', reason: error.message };
+        const status = error.paperNotFound ? 'not_found' : 'uncertain';
+        if (!error.paperNotFound) halted = true;
+        state.versions[row.key] = { status, fingerprint: row.fingerprint };
+        result = { key: row.key, status, reason: error.message };
       }
     }
     results.push(result);
@@ -370,7 +385,7 @@ async function main(args = process.argv.slice(2), env = process.env) {
     fs.appendFileSync(env.GITHUB_STEP_SUMMARY, `### PaperSkill 数据库同步\n\n${options.apply ? '执行' : '预览'}结果：\`${JSON.stringify(counts)}\`。完整问题清单及成功记录 ID 见 sync-report artifact。\n${fatalError ? '\n同步中断；此前成功创建的记录不会回滚，请查看报告核对未保存的 ID。\n' : ''}`);
   }
   if (fatalError) throw fatalError;
-  if (options.apply && results.some((row) => ['blocked', 'uncertain'].includes(row.status))) process.exitCode = 1;
+  if (options.apply && results.some((row) => ['blocked', 'uncertain', 'not_found'].includes(row.status))) process.exitCode = 1;
 }
 
 module.exports = { endpointFor, paperIdentifier, payloadFor, fingerprint, planFor, newState, validateState, createVersion, synchronize, localStore, githubStore, parseArgs, main };

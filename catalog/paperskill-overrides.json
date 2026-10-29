@@ -13,5 +13,9 @@
   },
   "asymmetric_flow_models/wangjingxiao0817": {
     "remote_id": 28
+  },
+  "boosting_continual_learning_of_vision_language_models_via_mixture_of_experts_adapters/songchenyi1011": {
+    "arxiv_id": "2403.11549",
+    "confirmed_missing_fingerprint": "c07342a91dc31d61573b1a9eb0b973773b6e6a8f8a783a843af7e5ce477bab72"
   }
 }
