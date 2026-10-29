@@ -20,6 +20,26 @@ PR 合并进 `main` 后，新增的 `Sync PaperSkill database` 工作流读取�
 
 无需在 Apifox 手工填写全部版本，也无需配置其测试环境。脚本使用完整 URL。工作流独立于 Pages 发布，不会被 Pages 工作流的取消机制中断；这里的入库成功不代表网页文件已上传到对方服务器。
 
+## PR、发布、评分和入库的接线
+
+当前流程是：PR 结构/身份/构建检查 → `Auto_Merge` 根据检查结果合并 → `main` 同时触发网页发布与创建数据库版本 → 网页发布成功后通知 `PS_auto_score` → 评分仓库保存评分并调用 `update_ai_score`。创建记录与评分有时间差时，评分仓库保留评分、重试回写，不重复创建版本。质量评分发生在发布后，不是 PR 合并前的内容审核。
+
+需要核对的仓库配置：
+
+| 仓库 | Actions Variables | Actions Secrets / 前置条件 |
+| --- | --- | --- |
+| `ReductTech/PaperSkill` | `PAPERSKILL_SYNC_ENABLED=true`；评分端准备好后设置 `PAPERSKILL_SCORE_ENABLED=true` | 已有通知需要 `AUTO_MERGE_DISPATCH_TOKEN`；评分清单生成和通知需要 `AUTO_MERGE_APP_ID`、`AUTO_MERGE_PRIVATE_KEY` |
+| `1223BETTYYANG/Auto_Merge` | `DRY_RUN=false` 才会真实合并 | `AUTO_MERGE_APP_ID`、`AUTO_MERGE_PRIVATE_KEY`；App 安装到 PaperSkill，并有合并和读取检查权限 |
+| `1223BETTYYANG/PS_auto_score` | `AUTO_SCORE_ENABLED=true`、`SCORE_MODE=model`；数据库目标与 PaperSkill 保持一致 | `NEW_API_KEY`、App ID/私钥；App 可读写评分仓库及私有状态仓库 `PS_auto_score_state`；私有评分记忆已初始化 |
+
+配置位置均为对应仓库的 **Settings → Secrets and variables → Actions**。不要把密钥放到 Variables 或代码里，也不必再次创建已经正确配置的 Secret。代码文件存在不代表这些云端配置已启用；首次应以一条真实新版本 PR 验证整个链路。
+
+评分接线在 `.github/workflows/deploy-pages.yml` 中由 `PAPERSKILL_SCORE_ENABLED` 控制。未开启时沿用普通网页发布；开启后读取固定评分工具提交 `275991ab7e83859b979a40f43ddf74a7ce13919f`，生成带部署 SHA 与资源校验和的 `score-manifest.json`，并仅在 Pages 部署成功后通知评分仓库。App 必须安装到个人账户对应的 `PS_auto_score`，仅安装在组织的 PaperSkill 不足以访问它。
+
+`Auto_Merge` 对修改工作流的 PR 会跳过自动合并，因此这次接线改动需要维护者合并；日常教程 PR 仍按其已有规则处理。已有论文优化的 fork workflow 若等待人工授权，当前合并工具不会代为批准。调度与模型/API 耗时也不保证在固定分钟数内完成。
+
+剩余未创建的历史数据库记录仍须补齐标识或由对方收录论文。评分仓库当前要求全量评分/数据库回执完整，首次旧评分入库未完成时会停在补回执阶段；因此不能把入库任务完成一次当成评分全链路已验收。评分启用前应同时检查这些历史缺项。
+
 ## 字段转换
 
 | 接口字段 | 来源 |

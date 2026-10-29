@@ -25,6 +25,32 @@ jobs:
           cache: npm
           cache-dependency-path: "html_output/*/*/package-lock.json"
       - run: npm run build:site
+      - name: Generate read token for scoring integration tools
+        if: vars.PAPERSKILL_SCORE_ENABLED == 'true'
+        id: tools-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.AUTO_MERGE_APP_ID }}
+          private-key: ${{ secrets.AUTO_MERGE_PRIVATE_KEY }}
+          owner: 1223BETTYYANG
+          repositories: PS_auto_score
+          permission-contents: read
+      - name: Check out pinned scoring integration tools
+        if: vars.PAPERSKILL_SCORE_ENABLED == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: 1223BETTYYANG/PS_auto_score
+          ref: 275991ab7e83859b979a40f43ddf74a7ce13919f
+          path: .score-tools
+          token: ${{ steps.tools-token.outputs.token }}
+          persist-credentials: false
+      - name: Record deployed versions and resource checksums
+        if: vars.PAPERSKILL_SCORE_ENABLED == 'true'
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: >-
+          python .score-tools/tools/create_deployment_manifest.py --source . --site site
+          --source-sha "$SOURCE_SHA" --repository ReductTech/PaperSkill
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -40,4 +66,37 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  notify-score:
+    if: vars.PAPERSKILL_SCORE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Generate token for scoring notification
+        id: score-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.AUTO_MERGE_APP_ID }}
+          private-key: ${{ secrets.AUTO_MERGE_PRIVATE_KEY }}
+          owner: 1223BETTYYANG
+          repositories: PS_auto_score
+          permission-contents: write
+      - name: Notify scoring repository of successful deployment
+        env:
+          GH_TOKEN: ${{ steps.score-token.outputs.token }}
+          SOURCE_SHA: ${{ github.sha }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, urllib.request
+          payload = {'event_type': 'paperskill-deployed', 'client_payload': {
+              'source_sha': os.environ['SOURCE_SHA'], 'source_repository': os.environ['SOURCE_REPOSITORY']}}
+          request = urllib.request.Request('https://api.github.com/repos/1223BETTYYANG/PS_auto_score/dispatches',
+              data=json.dumps(payload).encode(), headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'],
+              'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json'}, method='POST')
+          with urllib.request.urlopen(request, timeout=30) as response:
+              if response.status != 204:
+                  raise RuntimeError('Scoring notification was not accepted')
+          PY
 
