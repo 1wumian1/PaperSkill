@@ -7,6 +7,7 @@
 | [AGENT_WORKFLOW.md](AGENT_WORKFLOW.md) | Agent、使用者 | 菜单模式入口；各功能的详细步骤见 [agent-workflow/](agent-workflow/) |
 | [PARTICIPATING.md](PARTICIPATING.md) | 贡献者、Agent | 分支、完整项目导入、本地校验、Pull Request 和失败处理 |
 | [SUBMISSION.md](SUBMISSION.md) | 贡献者、审核者 | 公共仓库接收内容、PR 材料和安全边界 |
+| [PAPERSKILL_DATABASE_SYNC.md](PAPERSKILL_DATABASE_SYNC.md) | 维护者 | PR 合并后向对方数据库同步版本信息、历史补录和失败处理 |
 
 首次使用通常只需阅读仓库根目录的 [README](../README.md)，然后让 Agent 读取 `AGENT_WORKFLOW.md` 并展示功能菜单。Agent 会根据使用者的选择读取 `docs/agent-workflow/` 下对应文件执行。
 

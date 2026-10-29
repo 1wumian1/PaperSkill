@@ -14,7 +14,7 @@ test('Jianlun ID survives import and catalog; copied versions use their own iden
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'paperskill-jianlun-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.mkdirSync(path.join(root, 'scripts', 'lib'), { recursive: true });
-  for (const file of ['import-paper.js', 'modify-version.js', 'generate-catalog.js', 'lib/repository.js']) {
+  for (const file of ['import-paper.js', 'modify-version.js', 'generate-catalog.js', 'lib/repository.js', 'lib/github-identity.js']) {
     fs.copyFileSync(path.join(__dirname, '..', file), path.join(root, 'scripts', file));
   }
   fs.mkdirSync(path.join(root, 'paper-skill'));

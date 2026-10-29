@@ -10,6 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const { ROOT, OUTPUT_ROOT, PAPER_NAME_RE, VERSION_NAME_RE } = require('./lib/repository');
+const { resolveGithubLogin } = require('./lib/github-identity');
 
 const USAGE = [
   '用法: npm run modify -- <已有网页的相对路径> --participant "展示名" --github "用户名" [--jianlun-id "减论完整账号ID"] [--pinyin "lilei"] [--date 0922] [--version lilei0922] [--force]',
@@ -137,6 +138,7 @@ const paperDir = path.join(OUTPUT_ROOT, paperName);
 const source = path.join(paperDir, sourceVersion);
 if (!fs.existsSync(path.join(source, 'paper.json'))) throw new Error(`找不到要修改的网页版本：${path.relative(ROOT, source)}`);
 const sourceMeta = JSON.parse(fs.readFileSync(path.join(source, 'paper.json'), 'utf8'));
+opts.github = resolveGithubLogin(opts.github);
 
 const date = resolveDate(opts);
 const version = opts.version ? String(opts.version).trim() : resolveVersion(paperDir, `${pinyinSlug(opts)}${date.stamp}`);
@@ -149,7 +151,7 @@ if (fs.existsSync(target) && !opts.force) {
 copyProject(source, target);
 
 const participant = { name: opts.participant };
-if (opts.github) participant.github = String(opts.github).replace(/^@/, '');
+participant.github = opts.github;
 const jianlunId = String(opts['jianlun-id'] || '').trim();
 if (jianlunId) participant.jianlunId = jianlunId;
 const ancestors = buildAncestors(sourceMeta, sourceVersion);
