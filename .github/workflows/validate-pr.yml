@@ -24,6 +24,8 @@ jobs:
         run: npm run validate
       - name: Test database synchronization
         run: npm run test:paperskill-sync
+      - name: Test deployment manifest
+        run: python -m unittest discover -s scripts/tests -p test_score_manifest.py
       - name: Test contributor identity
         run: npm run test:github-identity
       - name: Validate pull request scope

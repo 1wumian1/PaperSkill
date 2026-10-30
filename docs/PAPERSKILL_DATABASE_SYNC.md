@@ -2,6 +2,16 @@
 
 PR 合并进 `main` 后，新增的 `Sync PaperSkill database` 工作流读取各版本的 `paper.json`，以 `multipart/form-data` 调用对方的 `create_version`。同步不执行教程代码，不需要安装教程依赖，也不涉及另一个仓库的 AI 评分。
 
+## 当前自动跳过策略（2026-10-30）
+
+只有能从 `paperUrl` 或明确的覆盖配置取得有效 `arxiv_id` 的版本，才进入自动评分和新建版本入库队列。只有 DOI、博客链接等无明确 arXiv ID 的版本记录为 `skipped`，保留网页发布，不打分、不发送创建请求，不因此使工作流失败。以后补齐 arXiv 链接即可重新进入队列。不会根据标题猜测标识，也不会删除已经存在的数据库记录。
+
+对方业务 `code=404` 确认未创建的论文也作为 `skipped/paper_not_found` 单独记录，继续处理其他版本。缺少被跳过的祖先时暂缓提交该后续版本。格式错误、待核对请求、鉴权、网络或 GitHub 状态保存错误仍作为真实错误报告，不能把此类故障标成成功。
+
+网页部署使用本仓库 `scripts/create-score-manifest.py`，按已提交的 `html_output/<paper>/<version>/paper.json` 识别项目，忽略目录说明文件。完整站点照常发布；`score-manifest.json` 只列出评分队列，并用 `published_versions`、`skipped_versions` 区分全部发布数量与自动跳过清单。若全站均无可评分版本，则不发送空评分任务。
+
+评分仓库必须同时应用 `eligible_paths` 配套改动：在导入历史分数前读取部署清单，排除清单外的历史回写任务。原有历史评分、冻结清单和成功回执仍保留，不把排除项伪造成入库成功；补齐标识、重新部署后可以重新加入。只修改 PaperSkill 的过滤不能修复评分仓库旧的全量等待逻辑。
+
 ## 维护者首次启用
 
 1. 将本次脚本、工作流和配置文件通过 PR 合并到 `main`。
@@ -34,11 +44,11 @@ PR 合并进 `main` 后，新增的 `Sync PaperSkill database` 工作流读取�
 
 配置位置均为对应仓库的 **Settings → Secrets and variables → Actions**。不要把密钥放到 Variables 或代码里，也不必再次创建已经正确配置的 Secret。代码文件存在不代表这些云端配置已启用；首次应以一条真实新版本 PR 验证整个链路。
 
-评分接线在 `.github/workflows/deploy-pages.yml` 中由 `PAPERSKILL_SCORE_ENABLED` 控制。未开启时沿用普通网页发布；开启后读取固定评分工具提交 `275991ab7e83859b979a40f43ddf74a7ce13919f`，生成带部署 SHA 与资源校验和的 `score-manifest.json`，并仅在 Pages 部署成功后通知评分仓库。App 必须安装到个人账户对应的 `PS_auto_score`，仅安装在组织的 PaperSkill 不足以访问它。
+评分接线在 `.github/workflows/deploy-pages.yml` 中由 `PAPERSKILL_SCORE_ENABLED` 控制。未开启时沿用普通网页发布；开启后使用本仓库的清单生成器，生成带部署 SHA 与资源校验和的 `score-manifest.json`，并仅在 Pages 部署成功后通知评分仓库。清单生成不再依赖旧的私有评分工具提交；通知仍要求 App 可访问个人账户对应的 `PS_auto_score`。
 
 `Auto_Merge` 对修改工作流的 PR 会跳过自动合并，因此这次接线改动需要维护者合并；日常教程 PR 仍按其已有规则处理。已有论文优化的 fork workflow 若等待人工授权，当前合并工具不会代为批准。调度与模型/API 耗时也不保证在固定分钟数内完成。
 
-剩余未创建的历史数据库记录仍须补齐标识或由对方收录论文。评分仓库当前要求全量评分/数据库回执完整，首次旧评分入库未完成时会停在补回执阶段；因此不能把入库任务完成一次当成评分全链路已验收。评分启用前应同时检查这些历史缺项。
+评分仓库应用 arXiv-only 配套改动后，历史回写只验收当前评分清单中的版本，排除项仍保留历史记录。对方暂未创建版本行时，合格评分保留并继续重试回写；真实服务或模型故障仍可能使验收未完成。需以一次实际云端发布、通知、评分和回写验证全链路。
 
 ## 字段转换
 
@@ -49,7 +59,7 @@ PR 合并进 `main` 后，新增的 `Sync PaperSkill database` 工作流读取�
 | `user_display_name` | `participants[0].name` |
 | `user_github_name` | `participants[0].github`，去掉开头的 `@` |
 | `page_path` | `papers/<paperName>/<version>/`，相对路径 |
-| `arxiv_id` / `doi` | 从 `paperUrl` 解析；仅发送其中一种 |
+| `arxiv_id` | 从 arXiv `paperUrl` 或明确覆盖配置解析；仅有 DOI 则跳过 |
 | `ancestors` | 将 `github/version` 转换为 `user_github_name/version_name`，`JSON.stringify` 后作为单个表单值 |
 | `tags` | `topics` 用英文逗号连接 |
 | `uuid` | 默认不发送；只有明确的覆盖配置或确认后的可选映射才发送 |
@@ -105,7 +115,7 @@ GitHub 状态存储遇到网络错误、HTTP 429 或 5xx 时，会有限重试�
 - 祖先未同步：先解决祖先版本；脚本按祖先在前的顺序提交。
 - 部分失败：成功记录仍会保存，工作流显示失败并上传问题报告；修复后再次运行或等待下一次合并。
 
-接口负责人已确认：HTTP 200 且业务 `code=404` 表示在对方论文库中找不到传入的 DOI/arXiv 标识，没有创建版本。脚本将其记为 `not_found`，继续处理其他论文。同一请求下次不会重发；修正标识、改变请求后可再次尝试。HTTP 404、含矛盾版本 ID 的业务 404、认证/服务器故障或结果不明确时仍停止本轮其他新请求（`deferred`）。已经成功的记录仍会保存。报告有 `not_found`、`blocked` 或 `uncertain` 时工作流仍显示失败，因此须结合分类计数判断实际入库进度。
+接口负责人已确认：HTTP 200 且业务 `code=404` 表示在对方论文库中找不到传入标识，没有创建版本。状态文件保留 `not_found`，报告记为 `skipped/paper_not_found`，继续处理其他论文。同一请求下次不会重发；修正标识、改变请求后可再次尝试。HTTP 404、含矛盾版本 ID 的业务 404、认证/服务器故障或结果不明确时仍停止本轮其他新请求（`deferred`）。已经成功的记录仍会保存。预期跳过不使任务失败；`blocked` 或 `uncertain` 仍使工作流失败，因此须结合分类计数判断实际入库进度。
 
 2026-10-29 对接确认 `boosting_continual_learning_of_vision_language_models_via_mixture_of_experts_adapters/songchenyi1011` 的 DOI 请求未入库，对方库仅收录 arXiv 标识。覆盖配置改为 `2403.11549`（https://arxiv.org/abs/2403.11549），并以 `confirmed_missing_fingerprint` 登记该次旧 DOI 请求的核对结果。
 

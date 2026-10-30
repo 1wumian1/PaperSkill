@@ -32,9 +32,7 @@ test('metadata converts to the documented multipart fields without guessing UUID
   assert.deepEqual(paperIdentifier('https://arxiv.org/abs/hep-th/9901001v2'), { arxiv_id: 'hep-th/9901001' });
   assert.deepEqual(paperIdentifier('https://doi.org/10.1000/example'), { doi: '10.1000/example' });
   assert.deepEqual(paperIdentifier('https://not-arxiv.org/abs/1706.03762'), {});
-  const doi = payloadFor(submission, metadata(), { doi: '10.1000/example' });
-  assert.equal(doi.doi, '10.1000/example');
-  assert.ok(!Object.hasOwn(doi, 'arxiv_id'));
+  assert.throws(() => payloadFor(submission, metadata(), { doi: '10.1000/example' }), error => error.skip === 'missing_arxiv_id');
 });
 
 test('invalid metadata is blocked before any upload; manual identifiers support non-arxiv source URLs', () => {
@@ -207,8 +205,8 @@ test('business 404 skips only the missing paper, continues the batch, and retrie
       ? { code: 404, msg: 'not found', data: [] } : { code: 200, data: { id: 42 } }));
   };
   const save = async () => {};
-  assert.deepEqual((await synchronize({ plan, state, save, create })).map(row => row.status), ['not_found', 'created']);
-  assert.deepEqual((await synchronize({ plan, state, save, create })).map(row => row.status), ['not_found', 'unchanged']);
+  assert.deepEqual((await synchronize({ plan, state, save, create })).map(row => row.status), ['skipped', 'created']);
+  assert.deepEqual((await synchronize({ plan, state, save, create })).map(row => row.status), ['skipped', 'unchanged']);
   assert.equal(calls, 2, 'unchanged missing identifiers must not be retried');
   const corrected = { ...plan[0], fingerprint: 'corrected', payload: { ...plan[0].payload, arxiv_id: '2403.11549' } };
   assert.equal((await synchronize({ plan: [corrected], state, save, create: async () => 43 }))[0].id, 43);
@@ -266,6 +264,20 @@ test('transient GitHub read failures retry, while permission failures stop immed
       assert.equal(calls, 3);
     }
   }
+});
+
+test('missing arXiv identifiers and their dependent versions are skipped without any POST or ledger entry', async () => {
+  const child = { paperName: 'test_paper', version: 'bob1027' };
+  const plan = planFor([submission, child], {}, false, item => metadata(item.version === 'alice1027'
+    ? { paperUrl: 'https://doi.org/10.1000/example' }
+    : { version: item.version, ancestors: [{ github: 'alice', version: 'alice1027' }] }));
+  const state = newState(endpoint);
+  const rows = await synchronize({ plan, state, save: async () => {}, create: async () => assert.fail('must not POST skipped projects') });
+  assert.deepEqual(rows.map(row => row.status), ['skipped', 'skipped']);
+  assert.deepEqual(rows.map(row => row.skip_reason), ['missing_arxiv_id', 'ancestor_not_synced']);
+  assert.deepEqual(state.versions, {});
+  const fixed = planFor([submission], {}, false, () => metadata());
+  assert.equal((await synchronize({ plan: fixed, state, save: async () => {}, create: async () => 42 }))[0].status, 'created');
 });
 
 test('checkpoint recovery reads back ambiguous writes without duplicating database creates or overwriting concurrent changes', async () => {

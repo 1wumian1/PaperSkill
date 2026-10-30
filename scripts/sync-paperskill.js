@@ -65,14 +65,10 @@ function payloadFor(submission, meta, override = {}, includeUuid = false) {
     : paperIdentifier(meta.paperUrl);
   const arxivId = identifier.arxiv_id;
   const doi = identifier.doi;
-  if (Boolean(arxivId) === Boolean(doi)) throw new Error('需要唯一的 arxiv_id 或 doi；其他论文链接请在覆盖文件补充标识');
-  if (arxivId) {
-    if (typeof arxivId !== 'string' || !/^(\d{4}\.\d{4,5}|[a-z-]+(?:\.[a-z]{2})?\/\d{7})$/i.test(arxivId)) throw new Error('arxiv_id 格式无效');
-    payload.arxiv_id = arxivId;
-  } else {
-    if (typeof doi !== 'string' || !/^10\.\d{4,9}\/\S+$/i.test(doi)) throw new Error('doi 格式无效');
-    payload.doi = doi;
-  }
+  if (!arxivId) throw Object.assign(new Error('没有明确的 arxiv_id，按入库策略自动跳过（仅有 DOI 也不提交）'), { skip: 'missing_arxiv_id' });
+  if (doi) throw new Error('需要唯一的 arxiv_id，不能同时指定 doi');
+  if (typeof arxivId !== 'string' || !/^(\d{4}\.\d{4,5}|[a-z-]+(?:\.[a-z]{2})?\/\d{7})$/i.test(arxivId)) throw new Error('arxiv_id 格式无效');
+  payload.arxiv_id = arxivId;
   const uuid = override.uuid ?? (includeUuid ? participant.jianlunId : undefined);
   if (uuid !== undefined && uuid !== '') {
     if (typeof uuid !== 'string' || !uuid.trim()) throw new Error('uuid 必须为非空字符串');
@@ -111,7 +107,7 @@ function planFor(submissions, overrides = {}, includeUuid = false, read = metada
         dependencies: (meta.ancestors || []).map((ancestor) => `${submission.paperName}/${ancestor.version}`),
       });
     } catch (error) {
-      rows.set(key, { key, error: error.message, dependencies: [] });
+      rows.set(key, { key, error: error.message, ...(error.skip ? { skip: error.skip } : {}), dependencies: [] });
     }
   }
   // Original versions must exist in the remote database before their descendants.
@@ -166,6 +162,8 @@ async function createVersion(endpoint, payload, headers = {}, fetchImpl = fetch)
 
 async function synchronize({ plan, state, save, create, onResult = () => {} }) {
   const results = [];
+  const byKey = new Map(plan.map(row => [row.key, row]));
+  const skipped = new Set();
   let halted = false;
   for (const row of plan) {
     let result;
@@ -173,7 +171,9 @@ async function synchronize({ plan, state, save, create, onResult = () => {} }) {
     // Manual confirmation applies only to the exact old request, never a later ambiguous attempt.
     const confirmedMissing = ['pending', 'uncertain'].includes(existing?.status)
       && row.confirmedMissingFingerprint === existing.fingerprint && row.fingerprint !== existing.fingerprint;
-    if (row.error) {
+    if (row.skip) {
+      result = { key: row.key, status: 'skipped', skip_reason: row.skip, reason: row.error };
+    } else if (row.error) {
       result = { key: row.key, status: 'blocked', reason: row.error };
     } else if (existing?.status === 'synced') {
       result = existing.fingerprint === row.fingerprint
@@ -184,9 +184,12 @@ async function synchronize({ plan, state, save, create, onResult = () => {} }) {
       state.versions[row.key] = { status: 'synced', id: row.remoteId, fingerprint: row.fingerprint, source: 'adopted' };
       result = { key: row.key, status: 'adopted', id: row.remoteId };
     } else if (existing?.status === 'not_found' && existing.fingerprint === row.fingerprint) {
-      result = { key: row.key, status: 'not_found', reason: '对方库未找到对应论文；请求未变化，暂不重复发送，请修正论文标识后再试' };
+      result = { key: row.key, status: 'skipped', skip_reason: 'paper_not_found', reason: '对方库未找到对应论文；请求未变化，暂不重复发送，请修正论文标识后再试' };
     } else if (existing && existing.status !== 'not_found' && !confirmedMissing) {
       result = { key: row.key, status: 'blocked', reason: '上次创建结果待核对，禁止自动重发；确认后用 remote_id 登记已有记录，或移除已确认未创建的状态项' };
+    } else if (row.dependencies.some(key => state.versions[key]?.status !== 'synced'
+        && (skipped.has(key) || byKey.get(key)?.skip || state.versions[key]?.status === 'not_found'))) {
+      result = { key: row.key, status: 'skipped', skip_reason: 'ancestor_not_synced', reason: '祖先版本已按策略跳过，暂不提交依赖它的版本' };
     } else if (row.dependencies.some((key) => state.versions[key]?.status !== 'synced')) {
       result = { key: row.key, status: 'blocked', reason: '祖先版本尚未入库，请先补齐其元数据或登记已有 remote_id' };
     } else if (halted) {
@@ -203,10 +206,13 @@ async function synchronize({ plan, state, save, create, onResult = () => {} }) {
         const status = error.paperNotFound ? 'not_found' : 'uncertain';
         if (!error.paperNotFound) halted = true;
         state.versions[row.key] = { status, fingerprint: row.fingerprint };
-        result = { key: row.key, status, reason: error.message };
+        result = error.paperNotFound
+          ? { key: row.key, status: 'skipped', skip_reason: 'paper_not_found', reason: error.message }
+          : { key: row.key, status, reason: error.message };
       }
     }
     results.push(result);
+    if (result.status === 'skipped') skipped.add(row.key);
     onResult(result);
   }
   await save(state);
@@ -357,7 +363,9 @@ async function main(args = process.argv.slice(2), env = process.env) {
   try {
     if (!options.apply) {
       // No network requests, state writes or UUID values in a preview.
-      results = plan.map((row) => row.error
+      results = plan.map((row) => row.skip
+        ? { key: row.key, status: 'skipped', skip_reason: row.skip, reason: row.error }
+        : row.error
         ? { key: row.key, status: 'blocked', reason: row.error }
         : { key: row.key, status: 'ready', identifier: row.payload.arxiv_id || row.payload.doi, page_path: row.payload.page_path, dependencies: row.dependencies, adopt_id: row.remoteId });
     } else {
