@@ -1,0 +1,36 @@
+/* Paper-specific overrides. This is the ONLY stylesheet the generator edits.
+   Keep the semantic color roles from tokens.css stable (see contract.md §5):
+   --blue = guidance/current, --green = success/paper method, --red = failure/old,
+   --orange = emphasis, --purple = auxiliary. Only append metaphor scene colors
+   or tune scene backgrounds here. Do NOT rewrite tokens.css / components.css. */
+
+:root {
+  --scene-bg: #f5f8f0;
+  --scene-light: #b8c9a7;
+  --scene-dark: #76906a;
+}
+
+/* Keep the hint in normal flow so it cannot overlap a multi-line lead. */
+.formula-explain .fe-hint {
+  position: static;
+  margin: 0 0 12px;
+  text-align: left;
+}
+
+/* Keep the final directory item above the fixed page navigation. */
+@media (min-width: 769px) {
+  .slide-sidebar {
+    height: calc(100vh - 84px);
+    height: calc(100dvh - 84px);
+  }
+}
+
+/* The inherited 580px visual column squeezes the explanation at medium
+   desktop widths. Keep the same card and typography; only let it reflow. */
+@media (max-width: 1320px) {
+  .analogy-visual { width: 50%; min-width: 0; flex-shrink: 1; }
+}
+@media (max-width: 900px) {
+  .analogy-card { flex-direction: column; }
+  .analogy-visual { width: 100%; }
+}

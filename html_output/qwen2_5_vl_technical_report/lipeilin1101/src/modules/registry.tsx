@@ -1,0 +1,58 @@
+import React from 'react';
+import { ExampleSlider } from './exampleSlider';
+import { Analogy1 } from './analogy-1';
+import { Analogy10 } from './analogy-10';
+import { Analogy2 } from './analogy-2';
+import { Analogy3 } from './analogy-3';
+import { Analogy4 } from './analogy-4';
+import { Analogy5 } from './analogy-5';
+import { Analogy6 } from './analogy-6';
+import { Analogy7 } from './analogy-7';
+import { Analogy8 } from './analogy-8';
+import { Analogy9 } from './analogy-9';
+import { Chapter1Main } from './ch1-main';
+import { Chapter10Main } from './ch10-main';
+import { Chapter2Main } from './ch2-main';
+import { Chapter3Main } from './ch3-main';
+import { Chapter4Main } from './ch4-main';
+import { Chapter5Extra } from './ch5-extra';
+import { Chapter5Main } from './ch5-main';
+import { Chapter6Main } from './ch6-main';
+import { Chapter7Extra } from './ch7-extra';
+import { Chapter7Main } from './ch7-main';
+import { Chapter8Main } from './ch8-main';
+import { Chapter9Main } from './ch9-main';
+import { HeroNew } from './hero-new';
+import { HeroOld } from './hero-old';
+
+export interface WidgetProps {
+  chapterId: string;
+  moduleId: string;
+}
+
+export const widgetRegistry: Record<string, React.FC<WidgetProps>> = {};
+widgetRegistry['example-slider'] = ExampleSlider;
+widgetRegistry['analogy-1'] = Analogy1;
+widgetRegistry['analogy-10'] = Analogy10;
+widgetRegistry['analogy-2'] = Analogy2;
+widgetRegistry['analogy-3'] = Analogy3;
+widgetRegistry['analogy-4'] = Analogy4;
+widgetRegistry['analogy-5'] = Analogy5;
+widgetRegistry['analogy-6'] = Analogy6;
+widgetRegistry['analogy-7'] = Analogy7;
+widgetRegistry['analogy-8'] = Analogy8;
+widgetRegistry['analogy-9'] = Analogy9;
+widgetRegistry['ch1-main'] = Chapter1Main;
+widgetRegistry['ch10-main'] = Chapter10Main;
+widgetRegistry['ch2-main'] = Chapter2Main;
+widgetRegistry['ch3-main'] = Chapter3Main;
+widgetRegistry['ch4-main'] = Chapter4Main;
+widgetRegistry['ch5-extra'] = Chapter5Extra;
+widgetRegistry['ch5-main'] = Chapter5Main;
+widgetRegistry['ch6-main'] = Chapter6Main;
+widgetRegistry['ch7-extra'] = Chapter7Extra;
+widgetRegistry['ch7-main'] = Chapter7Main;
+widgetRegistry['ch8-main'] = Chapter8Main;
+widgetRegistry['ch9-main'] = Chapter9Main;
+widgetRegistry['hero-new'] = HeroNew;
+widgetRegistry['hero-old'] = HeroOld;
