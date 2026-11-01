@@ -1,0 +1,248 @@
+/* 容器适配的交互模块（1.1 / 4.1 / 5.1 / 6.1）：不经整体 zoom，按卡片实际宽度布局。
+   字号与控件用网页真实尺寸；卡片内容宽度不足 700px 时画布在上、控件在下。 */
+
+.vtw.vtw-live {
+  width: auto;
+  height: auto;
+  --ppt-body-text: 15px;
+  --ppt-body-heading: 17px;
+  --ppt-body-emphasis: 22px;
+  container-type: inline-size;
+}
+.lv-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 300px);
+  gap: 20px;
+  align-items: start;
+}
+.lv-side {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+}
+@container (max-width: 700px) {
+  .lv-split {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+}
+.lv-stage {
+  width: 100%;
+  min-width: 0;
+}
+.lv-stage canvas {
+  display: block;
+  border-radius: 14px;
+  background: #f7f4ec;
+  border: 1px solid #e8dfcf;
+  touch-action: pan-y;
+}
+
+/* 控件：网页实际尺寸 */
+.vtw-live .vtw-seg {
+  gap: 8px;
+}
+.vtw-live .vtw-seg button,
+.vtw-live .vtw-btn {
+  font-size: 14px;
+  min-height: 36px;
+  padding: 5px 14px;
+  border-width: 1.5px;
+}
+.vtw-live .vtw-btn {
+  border-radius: 10px;
+}
+.vtw-live .vtw-seg-ind {
+  border-width: 1.5px;
+}
+.vtw-live .vtw-range input[type='range'] {
+  height: 30px;
+}
+.vtw-live .vtw-range input[type='range']::-webkit-slider-runnable-track {
+  height: 6px;
+}
+.vtw-live .vtw-range input[type='range']::-webkit-slider-thumb {
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border-width: 3px;
+}
+.vtw-live .vtw-range input[type='range']::-moz-range-track,
+.vtw-live .vtw-range input[type='range']::-moz-range-progress {
+  height: 6px;
+}
+.vtw-live .vtw-range input[type='range']::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-width: 3px;
+}
+.vtw-live .vtw-fb {
+  padding: 9px 14px;
+  border-left-width: 5px;
+  border-radius: 10px;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+.vtw-live .vtw-eq {
+  font-size: 17px;
+}
+.lv-read {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+.lv-read .vtw-em {
+  font-size: 22px;
+}
+.lv-note {
+  font-size: 13px;
+  color: #68778f;
+  line-height: 1.5;
+}
+
+/* 时间轴控制条 */
+.lv-tbar {
+  display: grid;
+  gap: 8px;
+}
+.lv-tbar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lv-tbar-btn {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid #9fb0c8;
+  background: #fff;
+  color: #27446e;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.12s;
+}
+.lv-tbar-btn:hover {
+  border-color: #27446e;
+}
+.lv-tbar-btn:active {
+  transform: scale(0.93);
+}
+.lv-tbar-btn:focus-visible,
+.lv-ph:focus-visible,
+.lv-tbar-range:focus-visible {
+  outline: 3px solid #f07e47;
+  outline-offset: 2px;
+}
+.lv-ic.is-play {
+  width: 0;
+  height: 0;
+  margin-left: 3px;
+  border-style: solid;
+  border-width: 7px 0 7px 12px;
+  border-color: transparent transparent transparent #27446e;
+}
+.lv-ic.is-pause {
+  width: 11px;
+  height: 14px;
+  border-left: 4px solid #27446e;
+  border-right: 4px solid #27446e;
+}
+.lv-tbar-range {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.lv-tbar-range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #27446e 0 var(--p), #e3e8f0 var(--p));
+}
+.lv-tbar-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #27446e;
+  box-shadow: 0 1px 4px rgba(25, 42, 70, 0.2);
+}
+.lv-tbar-range::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: #e3e8f0;
+}
+.lv-tbar-range::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: #27446e;
+}
+.lv-tbar-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #27446e;
+}
+.lv-tbar-phases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.lv-ph {
+  font-size: 13px;
+  line-height: 1.3;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1.5px solid #d7deea;
+  background: #fff;
+  color: #21324a;
+  cursor: pointer;
+  transition: background-color 0.24s, border-color 0.24s, color 0.24s, transform 0.12s;
+}
+.lv-ph:hover {
+  border-color: #9fb0c8;
+}
+.lv-ph:active {
+  transform: scale(0.96);
+}
+.lv-ph.is-cur {
+  background: #27446e;
+  border-color: #27446e;
+  color: #fff;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lv-tbar-btn,
+  .lv-ph {
+    transition: none;
+  }
+}
+
+/* 4.1 侧栏里的茶杯：与画布同一进度驱动 */
+.lv-cup {
+  max-width: 280px;
+}
+.lv-cup-t {
+  font-size: 13px;
+  fill: #68778f;
+}
+
+/* 减少动态效果（系统设置或 ?motion=reduce）：全站关闭 CSS 过渡与入场动画 */
+.is-reduced-motion *,
+.is-reduced-motion *::before,
+.is-reduced-motion *::after {
+  transition: none !important;
+  animation: none !important;
+}

@@ -1,0 +1,878 @@
+/* VTW 教程的页面组件样式。只使用 contract.md §2.5 的三种正文字号：
+   28px（说明/控件/坐标）、34px（局部标题）、44px（关键公式/结果），均通过共享 token 引用。 */
+
+.vtw {
+  position: relative;
+  width: 1472px;
+  height: 622px;
+  color: #21324a;
+  font-size: var(--ppt-body-text);
+  line-height: 1.42;
+}
+.vtw p {
+  margin: 0;
+}
+.vtw svg {
+  display: block;
+  overflow: visible;
+}
+.vtw-svg-t {
+  font-size: var(--ppt-body-text);
+  font-family: var(--ui-font-sans);
+}
+/* 只给没有显式 fill 属性的文字设默认色，避免 CSS 覆盖各处的语义着色 */
+.vtw-svg-t:not([fill]),
+.vtw-svg-h:not([fill]) {
+  fill: #21324a;
+}
+.vtw-svg-t.is-muted:not([fill]) {
+  fill: #68778f;
+}
+.vtw-svg-t.is-b {
+  font-weight: 700;
+}
+.vtw-svg-h {
+  font-size: var(--ppt-body-heading);
+  font-weight: 800;
+  font-family: var(--ui-font-sans);
+}
+.vtw-svg-em {
+  font-size: var(--ppt-body-emphasis);
+  font-weight: 800;
+  font-family: var(--ui-font-sans);
+}
+
+.vtw-h {
+  font-size: var(--ppt-body-heading);
+  font-weight: 800;
+  line-height: 1.25;
+}
+.vtw-em {
+  font-size: var(--ppt-body-emphasis);
+  font-weight: 800;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+.vtw-muted {
+  color: #68778f;
+}
+.vtw-green {
+  color: #228d5c;
+}
+.vtw-red {
+  color: #c43f52;
+}
+.vtw-orange {
+  color: #c4571f;
+}
+.vtw-blue {
+  color: #27446e;
+}
+.vtw-purple {
+  color: #7c3aed;
+}
+
+/* 舞台背景：安静的茶桌 */
+.vtw-stage {
+  border-radius: 20px;
+  background: #f7f4ec;
+  border: 1px solid #e8dfcf;
+}
+.vtw-panel {
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #d7deea;
+  padding: 18px 24px;
+}
+
+/* 分段选择 */
+.vtw-seg {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+/* 选中指示器：在选项之间平移；选中的按钮本身透明，文字颜色同步过渡 */
+.vtw-seg-ind {
+  position: absolute;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #27446e;
+  border: 2px solid #27446e;
+  pointer-events: none;
+  transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1), width 0.34s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.34s;
+}
+.vtw-seg.is-orange .vtw-seg-ind {
+  background: #fff4ec;
+  border-color: #f07e47;
+}
+.vtw .vtw-seg button {
+  position: relative;
+  font-size: var(--ppt-body-text);
+  line-height: 1.2;
+  padding: 8px 18px;
+  min-height: 52px;
+  border-radius: 999px;
+  border: 2px solid #d7deea;
+  background: #fff;
+  color: #21324a;
+  box-shadow: none;
+  transform: none;
+  transition: color 0.24s, border-color 0.24s, background-color 0.24s, transform 0.12s;
+}
+.vtw .vtw-seg button:hover {
+  border-color: #9fb0c8;
+}
+.vtw .vtw-seg button:active {
+  transform: scale(0.97);
+}
+.vtw .vtw-seg button[aria-checked='true'] {
+  background: transparent;
+  border-color: transparent;
+}
+.vtw .vtw-seg.is-blue button[aria-checked='true'] {
+  color: #fff;
+}
+.vtw .vtw-seg.is-orange button[aria-checked='true'] {
+  color: #a4441a;
+  font-weight: 700;
+}
+.vtw .vtw-seg button:focus-visible {
+  outline: 3px solid #f07e47;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .vtw-seg-ind,
+  .vtw .vtw-seg button {
+    transition: none;
+  }
+}
+
+/* 滑杆 */
+.vtw-range {
+  display: grid;
+  gap: 4px;
+}
+.vtw-range-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+.vtw-range-top b {
+  font-variant-numeric: tabular-nums;
+}
+.vtw-range.is-orange .vtw-range-top b {
+  color: #a4441a;
+}
+.vtw-range.is-blue .vtw-range-top b {
+  color: #27446e;
+}
+.vtw .vtw-range input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.vtw .vtw-range input[type='range']::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--vtw-range-c, #f07e47) 0 var(--p), #e3e8f0 var(--p));
+}
+.vtw .vtw-range.is-blue input[type='range'] {
+  --vtw-range-c: #27446e;
+}
+.vtw .vtw-range input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 34px;
+  height: 34px;
+  margin-top: -12px;
+  border-radius: 50%;
+  background: #fff;
+  border: 4px solid var(--vtw-range-c, #f07e47);
+  box-shadow: 0 2px 6px rgba(25, 42, 70, 0.18);
+}
+.vtw .vtw-range input[type='range']::-moz-range-track {
+  height: 10px;
+  border-radius: 999px;
+  background: #e3e8f0;
+}
+.vtw .vtw-range input[type='range']::-moz-range-progress {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--vtw-range-c, #f07e47);
+}
+.vtw .vtw-range input[type='range']::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  border: 4px solid var(--vtw-range-c, #f07e47);
+}
+
+/* 反馈 */
+.vtw-fb {
+  font-size: var(--ppt-body-text);
+  line-height: 1.42;
+  padding: 12px 20px;
+  border-radius: 14px;
+  border-left: 8px solid #27446e;
+  background: #eef3fb;
+}
+.vtw-fb.is-ok {
+  border-left-color: #228d5c;
+  background: rgba(34, 141, 92, 0.1);
+}
+.vtw-fb.is-warn {
+  border-left-color: #f07e47;
+  background: rgba(240, 126, 71, 0.1);
+}
+.vtw-fb.is-bad {
+  border-left-color: #c43f52;
+  background: rgba(196, 63, 82, 0.09);
+}
+.vtw-fb b {
+  font-weight: 800;
+}
+
+/* 按钮 */
+.vtw .vtw-btn {
+  font-size: var(--ppt-body-text);
+  line-height: 1.2;
+  padding: 8px 20px;
+  min-height: 52px;
+  border-radius: 12px;
+  border: 2px solid #9fb0c8;
+  background: #fff;
+  color: #21324a;
+  box-shadow: none;
+}
+.vtw .vtw-btn.is-primary {
+  background: #27446e;
+  border-color: #27446e;
+  color: #fff;
+}
+.vtw .vtw-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.vtw .vtw-btn[aria-pressed='true'] {
+  border-color: #f07e47;
+  background: #fff4ec;
+}
+/* 统一的按压 / 焦点反馈 */
+.vtw .vtw-btn,
+.vtw .vtw-guess-opts button {
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.12s;
+}
+.vtw .vtw-btn:not(:disabled):active,
+.vtw .vtw-guess-opts button:active {
+  transform: scale(0.97);
+}
+.vtw .vtw-btn:focus-visible,
+.vtw .vtw-guess-opts button:focus-visible,
+.vtw .vtw-range input[type='range']:focus-visible {
+  outline: 3px solid #f07e47;
+  outline-offset: 3px;
+}
+.vtw-fb-in {
+  display: block;
+  animation: vtw-fb-in 0.24s ease-out;
+}
+@keyframes vtw-fb-in {
+  from {
+    opacity: 0.55;
+    transform: translateY(4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vtw .vtw-btn,
+  .vtw .vtw-guess-opts button {
+    transition: none;
+  }
+  .vtw-fb-in {
+    animation: none;
+  }
+}
+
+/* 图例 */
+.vtw-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 24px;
+  color: #68778f;
+}
+.vtw-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.vtw-legend-sw {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  border: 2px solid transparent;
+}
+
+/* 先猜 */
+.vtw-guess {
+  display: grid;
+  gap: 12px;
+}
+.vtw-guess-q {
+  font-weight: 700;
+}
+.vtw-guess-k {
+  display: inline-block;
+  margin-right: 12px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #f5f3ff;
+  color: #5b21b6;
+}
+.vtw-guess-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.vtw .vtw-guess-opts button {
+  font-size: var(--ppt-body-text);
+  line-height: 1.2;
+  padding: 8px 20px;
+  min-height: 52px;
+  border-radius: 999px;
+  border: 2px solid #9fb0c8;
+  background: #fff;
+  color: #21324a;
+  box-shadow: none;
+}
+.vtw .vtw-guess-opts button:hover {
+  border-color: #27446e;
+}
+.vtw-guess-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #68778f;
+}
+
+/* 公式 */
+.vtw-eq {
+  font-family: 'Cambria Math', 'Times New Roman', serif;
+  font-size: var(--ppt-body-heading);
+  line-height: 1.5;
+  color: #21324a;
+}
+.vtw-eq.is-em {
+  font-size: var(--ppt-body-emphasis);
+}
+.vtw-eq i {
+  font-style: italic;
+}
+.vtw-eq sub,
+.vtw-eq sup {
+  font-size: 0.62em;
+  line-height: 0;
+}
+.vtw .formula-symbol {
+  border-bottom: 3px dotted #f07e47;
+  cursor: help;
+}
+
+/* 代码 */
+.vtw-code {
+  font-family: var(--ui-font-mono);
+  font-size: var(--ppt-body-text);
+  line-height: 1.5;
+  background: #f6f8fc;
+  border: 1px solid #d7deea;
+  border-radius: 14px;
+  padding: 12px 18px;
+  white-space: pre;
+}
+.vtw-code .is-hl {
+  background: #fff4ec;
+  box-shadow: inset 6px 0 0 #f07e47;
+  display: block;
+  margin: 0 -18px;
+  padding: 0 18px;
+}
+
+/* 封面动画 */
+.vtw-cover-result {
+  margin-top: 16px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #d7deea;
+  font-size: var(--ppt-body-text);
+  line-height: 1.42;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.vtw-cover-result.is-ok {
+  border-color: #228d5c;
+  color: #1b7049;
+}
+.vtw-cover-result.is-old {
+  border-color: #c43f52;
+  color: #a83c50;
+}
+
+/* 1.1 计算账单 */
+.vtw-bill {
+  display: grid;
+  grid-template-columns: 640px minmax(0, 1fr);
+  grid-template-rows: 296px minmax(0, 1fr);
+  gap: 14px 24px;
+}
+.vtw-bill > svg {
+  grid-column: 1 / -1;
+}
+.vtw-bill-ctrl {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+.vtw-bill-eq {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+/* 可点的 SVG 区域 */
+.vtw-hit {
+  cursor: pointer;
+}
+.vtw-hit:focus-visible {
+  outline: none;
+  stroke: #27446e;
+  stroke-width: 6;
+}
+
+/* 2.1 问题相关的剪枝 */
+.vtw-qp {
+  display: grid;
+  grid-template-columns: 800px minmax(0, 1fr);
+  gap: 28px;
+  align-items: center;
+}
+.vtw-qp-img {
+  border-radius: 16px;
+  overflow: hidden;
+}
+.vtw-qp-side {
+  display: grid;
+  gap: 12px;
+  align-content: center;
+}
+
+/* 2.2 四个短板 */
+.vtw-hd {
+  display: grid;
+  grid-template-columns: 420px minmax(0, 1fr);
+  gap: 32px;
+}
+.vtw-hd-list {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+.vtw .vtw-hd-item {
+  display: flex;
+  gap: 12px;
+  text-align: left;
+  font-size: var(--ppt-body-text);
+  line-height: 1.35;
+  padding: 12px 18px;
+  border-radius: 14px;
+  border: 2px solid #d7deea;
+  background: #fff;
+  color: #21324a;
+  box-shadow: none;
+}
+.vtw .vtw-hd-item span {
+  color: #68778f;
+}
+.vtw .vtw-hd-item[aria-checked='true'] {
+  border-color: #27446e;
+  background: #eef3fb;
+  font-weight: 700;
+}
+.vtw .vtw-hd-item[aria-checked='true'] span {
+  color: #27446e;
+}
+.vtw-hd-main {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+/* 3.1 注意力 */
+.vtw-at {
+  display: grid;
+  grid-template-columns: 900px minmax(0, 1fr);
+  gap: 28px;
+}
+.vtw-at-side {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+/* 4.1 信息迁移 */
+.vtw-mg {
+  display: grid;
+  grid-template-rows: 400px auto auto;
+  gap: 12px;
+}
+.vtw-mg-ctrl {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 32px;
+  align-items: end;
+}
+
+/* 4.2 表 1 */
+.vtw-t1 {
+  display: grid;
+  grid-template-columns: 900px minmax(0, 1fr);
+  gap: 28px;
+}
+.vtw-t1-side {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+/* 5.1 撤出塔 */
+.vtw-wt {
+  display: grid;
+  grid-template-columns: 900px minmax(0, 1fr);
+  gap: 28px;
+}
+.vtw-wt-side {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+/* 5.2 预填充与解码 */
+.vtw-pd {
+  display: grid;
+  grid-template-columns: 640px minmax(0, 1fr);
+  gap: 28px;
+}
+.vtw-pd-side {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+.vtw-pd-ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 0;
+  font-weight: 700;
+}
+.vtw-pd-ask-btns {
+  display: inline-flex;
+  gap: 10px;
+  margin-left: 16px;
+}
+.vtw-pd-nav {
+  display: flex;
+  gap: 12px;
+}
+
+/* 6.1 KV 缓存：宽幅图在上，公式 / 滑杆 / 反馈在下方一行 */
+.vtw-kv {
+  display: grid;
+  grid-template-rows: 392px minmax(0, 1fr);
+  gap: 14px;
+}
+.vtw-kv-side {
+  display: grid;
+  grid-template-columns: 0.9fr 1.15fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 6px 32px;
+  align-items: start;
+}
+.vtw-kv-side > :nth-child(1) { grid-column: 1; grid-row: 1; }
+.vtw-kv-side > :nth-child(2) { grid-column: 2; grid-row: 1; }
+.vtw-kv-side > :nth-child(3) { grid-column: 2; grid-row: 2; }
+.vtw-kv-side > :nth-child(4) { grid-column: 1; grid-row: 2; }
+.vtw-kv-side > :nth-child(5) { grid-column: 3; grid-row: 1 / span 2; }
+
+/* 6.2 位置编号 */
+.vtw-pe {
+  display: grid;
+  grid-template-columns: 900px minmax(0, 1fr);
+  grid-template-rows: 470px minmax(0, 1fr);
+  gap: 16px 28px;
+}
+.vtw-pe-side {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+.vtw-pe-note {
+  grid-column: 1;
+  align-self: start;
+}
+
+/* 表格（只在需要精确查数时使用） */
+.vtw-table {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  width: 100%;
+}
+.vtw-table caption {
+  text-align: left;
+  color: #68778f;
+  padding-bottom: 6px;
+}
+.vtw-table th,
+.vtw-table td {
+  padding: 6px 12px;
+  border-bottom: 1px solid #d7deea;
+  text-align: right;
+}
+.vtw-table th:first-child {
+  text-align: left;
+}
+.vtw-table tr.is-sel {
+  background: #fff4ec;
+}
+
+/* 7.1 K 取舍 / 7.2 KL 扫描 */
+.vtw-kt,
+.vtw-kl {
+  display: grid;
+  grid-template-columns: 900px minmax(0, 1fr);
+  gap: 28px;
+}
+.vtw-kt-side,
+.vtw-kl-side {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+.vtw-kt-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* 8.1 TFLOPs 复算 */
+.vtw-fc {
+  display: grid;
+  grid-template-columns: 700px minmax(0, 1fr);
+  gap: 32px;
+}
+.vtw-fc-left {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+.vtw-fc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.vtw .vtw-fc-grid button {
+  font-size: var(--ppt-body-text);
+  line-height: 1.2;
+  min-height: 52px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  border: 2px solid #d7deea;
+  background: #fff;
+  color: #21324a;
+  text-align: left;
+  box-shadow: none;
+}
+.vtw .vtw-fc-grid button[aria-checked='true'] {
+  border-color: #27446e;
+  background: #27446e;
+  color: #fff;
+}
+.vtw-fc-right {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+.vtw-fc-cup {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+
+/* 8.2 延迟与显存 */
+.vtw-lm {
+  display: grid;
+  grid-template-columns: 960px minmax(0, 1fr);
+  gap: 28px;
+}
+.vtw-lm-side {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+.vtw-lm-table {
+  font-size: 24px;
+}
+.vtw-lm-table th,
+.vtw-lm-table td {
+  padding: 8px 6px;
+}
+.vtw-t2-table {
+  font-size: 22px;
+}
+.vtw-t2-table caption {
+  padding-bottom: 2px;
+}
+.vtw-t2-table th,
+.vtw-t2-table td {
+  padding: 4px 4px;
+}
+.vtw-t2-table .is-worst {
+  color: #c2410c;
+  font-weight: 700;
+}
+.vtw-lm-table tbody tr {
+  cursor: pointer;
+}
+
+/* 9.1 表 2 */
+.vtw-t2 {
+  display: grid;
+  grid-template-columns: 820px minmax(0, 1fr);
+  gap: 28px;
+}
+.vtw-t2-side {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+/* 10.1 边界 */
+.vtw-bd {
+  display: grid;
+  grid-template-columns: 900px minmax(0, 1fr);
+  gap: 28px;
+}
+.vtw-bd-side {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+.vtw-bd-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+
+/* 10.2 MME 子任务 */
+.vtw-mme {
+  display: grid;
+  grid-template-columns: 760px minmax(0, 1fr);
+  gap: 28px;
+}
+.vtw-mme-side {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+.vtw-mme-top {
+  display: grid;
+  gap: 2px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  background: #f6f8fc;
+}
+.vtw-mme-top p {
+  margin: 0;
+}
+
+/* 10.3 结论分级 */
+.vtw-vd {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 440px;
+  gap: 32px;
+}
+.vtw-vd-card {
+  align-self: start;
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 24px 28px;
+  border-radius: 20px;
+  background: #f7f4ec;
+  border: 1px solid #e8dfcf;
+}
+.vtw-vd-bins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.vtw .vtw-vd-bin {
+  font-size: var(--ppt-body-text);
+  line-height: 1.2;
+  min-height: 56px;
+  padding: 8px 22px;
+  border-radius: 14px;
+  border: 3px solid var(--c);
+  background: #fff;
+  color: #21324a;
+  box-shadow: none;
+}
+.vtw .vtw-vd-bin:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.vtw .vtw-vd-bin.is-answer {
+  opacity: 1;
+  background: #fff;
+  color: #21324a;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 3px var(--c);
+}
+.vtw .vtw-vd-bin.is-answer::before {
+  content: '✓ ';
+  color: var(--c);
+}
+.vtw .vtw-vd-bin.is-picked:not(.is-answer) {
+  opacity: 1;
+  border-style: dashed;
+}
+.vtw-vd-nav {
+  display: flex;
+  gap: 12px;
+}
+.vtw-vd-side {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+/* 镜像构图：解释与控件在左、图在右（3.1 / 7.2 / 10.2），避免整套都是“左图右卡” */
+.vtw-at { grid-template-columns: minmax(0, 1fr) 900px; }
+.vtw-at > svg { grid-column: 2; grid-row: 1; }
+.vtw-at-side { grid-column: 1; grid-row: 1; }
+.vtw-kl.vtw-kl { grid-template-columns: minmax(0, 1fr) 900px; }
+.vtw-kl > svg { grid-column: 2; grid-row: 1; }
+.vtw-kl-side { grid-column: 1; grid-row: 1; }
+.vtw-mme { grid-template-columns: minmax(0, 1fr) 760px; }
+.vtw-mme > svg { grid-column: 2; grid-row: 1; }
+.vtw-mme-side { grid-column: 1; grid-row: 1; }

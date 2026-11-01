@@ -1,0 +1,87 @@
+/* VTW 长滚动版的论文专属样式（外壳尺寸与配色沿用 v9.css；这里只加本教程用到的芯片、表格与缩放容器）。 */
+
+:root {
+  --paper-scene-bg: #f7f4ec;
+  --paper-tea: #b98446;
+  --paper-leaf: #8a5a2b;
+}
+
+/* 交互模块缩放容器：宽度不足时在卡片内横向滚动 */
+.v7-zoomwrap { width: 100%; overflow-x: auto; overflow-y: hidden; }
+.v7-zoomwrap.is-cover { display: flex; justify-content: center; padding-top: 8px; overflow: hidden; }
+.v7-zoom { flex: none; }
+
+/* 内容口径与证据芯片 */
+.v7-tag { display: inline-block; margin: 0 2px; padding: 0 8px; border-radius: 99px; font-size: 12px; font-weight: 700; line-height: 1.7; vertical-align: 1px; white-space: nowrap; border: 1px solid transparent; }
+.v7-tag.is-paper { background: rgba(34, 141, 92, 0.1); color: var(--green); border-color: rgba(34, 141, 92, 0.25); }
+.v7-tag.is-code { background: var(--blue-soft); color: var(--blue); border-color: rgba(39, 68, 110, 0.2); }
+.v7-tag.is-extrap { background: rgba(240, 126, 71, 0.1); color: #a4441a; border-color: rgba(240, 126, 71, 0.3); }
+.v7-tag.is-demo { background: var(--purple-soft); color: var(--purple); border-color: rgba(124, 58, 237, 0.2); }
+.v7-ev { display: inline-block; margin: 0 2px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--line); background: #f6f8fc; color: var(--blue); font-size: 12px; font-weight: 700; line-height: 1.7; text-decoration: none; white-space: nowrap; vertical-align: 1px; }
+.v7-ev:hover { border-color: var(--blue); }
+.v7-ev.is-arxiv { color: #7a5b16; }
+.v7-ev.is-code { font-family: var(--ui-font-mono); }
+.v7-ev.is-ext { color: var(--ink-2); }
+.v7-term.formula-symbol { border-bottom: 1px dashed var(--blue); color: inherit; }
+.v7-muted { color: var(--ink-2); }
+
+/* 公式 */
+.v7-fx .fx-line { display: block; }
+.v7-fx i { font-style: italic; }
+.v7-fx sub, .v7-fx sup { font-size: 0.65em; line-height: 0; }
+
+/* 深入阅读 */
+.v7-deep-list { margin: 4px 0; padding-left: 1.3em; }
+.v7-table-scroll { overflow-x: auto; }
+.v7-caption { font-size: 12px; color: var(--ink-2); }
+.v9-deep-table th { padding: 4px 8px; border-bottom: 1px solid var(--line-2); text-align: left; font-weight: 700; }
+
+/* 收束 */
+.v7-verdict { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 16px 0; }
+.v7-verdict-col { padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; border-top-width: 4px; }
+.v7-verdict-col.is-ok { border-top-color: var(--green); }
+.v7-verdict-col.is-warn { border-top-color: var(--orange); }
+.v7-verdict-col.is-unknown { border-top-color: var(--ink-2); }
+.v7-verdict-col h3 { font-size: 16px; margin-bottom: 4px; }
+.v7-verdict-col > p { font-size: 13px; }
+.v7-verdict-col ul { margin: 8px 0 0; padding-left: 1.1em; font-size: 14px; }
+.v7-verdict-col li { margin: 6px 0; }
+.v7-verdict-col li b { display: block; font-weight: 700; }
+.v7-verdict-col li span { display: block; font-size: 13px; color: var(--ink-2); }
+.v7-retell { margin: 8px 0; padding: 8px 12px; border-radius: 10px; background: #fff; border: 1px solid var(--line); }
+.v7-retell summary { cursor: pointer; font-weight: 700; }
+.v7-retell p { margin-top: 6px; }
+.v7-gloss { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+.v7-gloss > div { padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; }
+.v7-gloss dt { font-weight: 800; }
+.v7-gloss dt span { margin-left: 8px; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.v7-gloss dd { font-size: 14px; }
+.v7-sources { list-style: none; display: grid; gap: 8px; margin-bottom: 12px; }
+.v7-sources li { display: flex; flex-direction: column; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; }
+.v7-sources li span { font-size: 13px; color: var(--ink-2); }
+
+@media (max-width: 960px) {
+  .v7-verdict { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .v7-gloss { grid-template-columns: 1fr; }
+}
+
+/* v7.1：合并后的开场段与“符号与推导” */
+.cb-text.v7-intro { color: var(--ink); font-size: 16px; }
+.v7-derive { display: flex; flex-direction: column; gap: 4px; margin: 12px 0; padding: 10px 14px; border-left: 4px solid var(--line-2); border-radius: 0 8px 8px 0; background: #f6f8fc; font-size: 14px; }
+.v7-derive b { font-size: 13px; color: var(--ink-2); }
+
+/* 视频区沿用 DivPrune 的卡片，仅补充标题对齐、页内定位与手机留白。 */
+.vtw-videos .dl-video-card strong { min-height: 3em; }
+.vtw-videos .dl-video-meta { flex-wrap: wrap; justify-content: space-between; }
+.vtw-videos > .vtw-video-note { margin: 18px 0 0; font-size: 12px; line-height: 1.7; }
+@media (max-width: 1279px) {
+  .vtw-videos { scroll-margin-top: 54px; }
+}
+@media (max-width: 560px) {
+  .vtw-videos { padding: 22px 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vtw-videos .dl-video-link-cover { transition: none; }
+}
